@@ -4,7 +4,7 @@ class TabConsole(ctk.CTkFrame):
     """
     Onglet contenant la console en direct et les contrôles du serveur pour la version choisie.
     """
-    def __init__(self, master, on_start, on_stop, on_send_command, on_download, on_version_change, **kwargs):
+    def __init__(self, master, on_start, on_stop, on_send_command, on_download, on_version_change, on_tunnel_toggle=None, **kwargs):
         super().__init__(master, **kwargs)
         
         self.on_start = on_start
@@ -12,6 +12,7 @@ class TabConsole(ctk.CTkFrame):
         self.on_send_command = on_send_command
         self.on_download = on_download
         self.on_version_change = on_version_change
+        self.on_tunnel_toggle = on_tunnel_toggle
         
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(2, weight=1)
@@ -38,6 +39,13 @@ class TabConsole(ctk.CTkFrame):
         
         self.btn_stop = ctk.CTkButton(self.frame_controls, text="Arrêter", fg_color="red", hover_color="darkred", state="disabled", command=self._on_stop_clicked)
         self.btn_stop.pack(side="left", padx=5, pady=5)
+        
+        # Bouton Tunnel ngrok
+        self.btn_tunnel = ctk.CTkButton(self.frame_controls, text="🌐 Rendre Public", fg_color="#6A0DAD", hover_color="#4B0082", command=self._on_tunnel_clicked)
+        self.btn_tunnel.pack(side="right", padx=5, pady=5)
+        
+        # Tunnel IP (cachée par défaut)
+        self.entry_tunnel_ip = ctk.CTkEntry(self.frame_controls, width=180, justify="center")
         
         # Status Label
         self.lbl_state = ctk.CTkLabel(self.frame_controls, text="Statut: Éteint", text_color="gray")
@@ -134,3 +142,19 @@ class TabConsole(ctk.CTkFrame):
         if cmd:
             self.on_send_command(cmd)
             self.entry_cmd.delete(0, "end")
+            
+    def _on_tunnel_clicked(self):
+        if self.on_tunnel_toggle:
+            self.on_tunnel_toggle()
+            
+    def set_tunnel_state(self, active, ip=""):
+        if active:
+            self.btn_tunnel.configure(text="🔴 Fermer l'accès", fg_color="red", hover_color="darkred")
+            self.entry_tunnel_ip.pack(side="right", padx=5, pady=5, before=self.btn_tunnel)
+            self.entry_tunnel_ip.configure(state="normal")
+            self.entry_tunnel_ip.delete(0, "end")
+            self.entry_tunnel_ip.insert(0, ip)
+            self.entry_tunnel_ip.configure(state="readonly")
+        else:
+            self.btn_tunnel.configure(text="🌐 Rendre Public", fg_color="#6A0DAD", hover_color="#4B0082")
+            self.entry_tunnel_ip.pack_forget()

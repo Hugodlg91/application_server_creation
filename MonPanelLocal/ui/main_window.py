@@ -7,7 +7,7 @@ from .widget_monitor import WidgetMonitor
 from .tab_plugins import TabPlugins
 
 class MainWindow(ctk.CTk):
-    def __init__(self, server_manager, config_manager, downloader, system_monitor, plugin_manager):
+    def __init__(self, server_manager, config_manager, downloader, system_monitor, plugin_manager, tunnel_manager):
         super().__init__()
         
         self.server_manager = server_manager
@@ -15,7 +15,9 @@ class MainWindow(ctk.CTk):
         self.downloader = downloader
         self.system_monitor = system_monitor
         self.plugin_manager = plugin_manager
+        self.tunnel_manager = tunnel_manager
         self.current_version = None
+        self.tunnel_active = False
         
         self.title("MonPanelLocal - Minecraft Server Dashboard")
         self.geometry("850x600")
@@ -40,7 +42,8 @@ class MainWindow(ctk.CTk):
             on_stop=self._action_stop,
             on_send_command=self._action_send_command,
             on_download=self._action_download,
-            on_version_change=self._action_version_change
+            on_version_change=self._action_version_change,
+            on_tunnel_toggle=self._action_toggle_tunnel
         )
         self.tab_console.pack(fill="both", expand=True)
         
@@ -184,3 +187,31 @@ class MainWindow(ctk.CTk):
             progress_callback=on_progress,
             finish_callback=on_finish
         )
+
+    def _action_toggle_tunnel(self):
+        if self.tunnel_active:
+            self.tab_console.btn_tunnel.configure(state="disabled")
+            def on_stopped():
+                self.tunnel_active = False
+                self.after(0, lambda: self.tab_console.set_tunnel_state(False))
+                self.after(0, lambda: self.tab_console.btn_tunnel.configure(state="normal"))
+                self.after(0, self.tab_console.append_log, "[Système] Accès public fermé.")
+            self.tunnel_manager.stop_tunnel(callback_stopped=on_stopped)
+        else:
+            self.tab_console.btn_tunnel.configure(state="disabled")
+            
+            # Récupération du port depuis server.properties ou port par défaut
+            config = self.config_manager.read_config()
+            port = int(config.get("server-port", 25565))
+            
+            def on_success(ip):
+                self.tunnel_active = True
+                self.after(0, lambda: self.tab_console.set_tunnel_state(True, ip))
+                self.after(0, lambda: self.tab_console.btn_tunnel.configure(state="normal"))
+                self.after(0, self.tab_console.append_log, f"[Système] Tunnel ouvert ! IP publique : {ip}")
+                
+            def on_error(err):
+                self.after(0, lambda: self.tab_console.btn_tunnel.configure(state="normal"))
+                self.after(0, self.tab_console.append_log, f"[Erreur] Tunnel ngrok: {err}")
+                
+            self.tunnel_manager.start_tunnel(port, on_success, on_error)

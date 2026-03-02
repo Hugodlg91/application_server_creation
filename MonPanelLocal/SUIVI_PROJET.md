@@ -4,7 +4,18 @@ Ce document retrace l'historique de développement, les fonctionnalités ajouté
 
 ---
 
-## 🧩 Version 5.0 - Gestionnaire de Plugins Modrinth (Actuelle)
+## 🌐 Version 5.1 - Tunneling Local avec pyngrok (Actuelle)
+**Date :** 02 Mars 2026
+**Objectif :** Permettre de rendre le serveur Minecraft accessible publiquement sur internet sans ouvrir les ports du routeur grâce à ngrok.
+
+**Modifications Apportées :**
+- **Nouveau Backend Tunneling** (`core/tunnel_manager.py`) : Implémentation de la classe `TunnelManager` wrapper asynchrone pour la bibliothèque `pyngrok`. Permet d'ouvrir un tunnel TCP dynamique et de retourner une adresse de connexion épurée (retrait automatique du préfixe `tcp://`). La fonction de fermeture tue proprement l'exécutable ngrok associé.
+- **Intégration Interface** (`ui/tab_console.py`) : Ajout d'un bouton de bascule "🌐 Rendre Public" ainsi que d'un champ de lecture (Entry) permettant aux administrateurs de récupérer et copier l'adresse IP et port générés. L'état du bouton passe au rouge une fois actif pour faciliter la fermeture manuelle.
+- **Couplage Global et Extinction Propre** (`ui/main_window.py` & `main.py`) : Interconnexion avec l'hôte principal et le système de callbacks thread-safe. À la fermeture du programme global, un appel de fin est garanti (`tunnel_manager.stop_tunnel()`) pour éviter d'avoir des processus ngrok fantômes en arrière-plan.
+
+---
+
+## 🧩 Version 5.0 - Gestionnaire de Plugins Modrinth
 **Date :** 02 Mars 2026
 **Objectif :** Intégrer la recherche, le téléchargement et l'installation de plugins Minecraft depuis l'API Modrinth directement via l'interface du panel.
 
