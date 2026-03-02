@@ -19,6 +19,10 @@ libraries/
 plugins/
 cache/
 
+# MonPanelLocal / Téléchargements
+minecraft_server_*/
+runtimes/
+
 # Python
 __pycache__/
 *.py[cod]

@@ -1,6 +1,7 @@
 import os
 import subprocess
 import threading
+import re
 from .java_manager import JavaManager
 
 class ServerManager:
@@ -17,6 +18,9 @@ class ServerManager:
         self.jar_path = ""
         self.eula_path = ""
         self.is_running = False
+        
+        self.connected_players = set()
+        self.on_players_update_callback = None
         
         self.on_log_received = on_log_received
         self.on_status_changed = on_status_changed
@@ -115,11 +119,49 @@ class ServerManager:
         if not self.process: return
         for line in iter(self.process.stdout.readline, ''):
             if line:
-                self._notify_log(line.strip())
+                line_clean = line.strip()
+                self._notify_log(line_clean)
+                
+                # Check for players joining
+                match_join = re.search(r"\]:\s+([a-zA-Z0-9_]+)\s+joined the game", line_clean)
+                if match_join:
+                    player_name = match_join.group(1)
+                    self.connected_players.add(player_name)
+                    if self.on_players_update_callback:
+                        self.on_players_update_callback(list(self.connected_players))
+
+                # Check for players leaving
+                match_leave = re.search(r"\]:\s+([a-zA-Z0-9_]+)\s+left the game", line_clean)
+                if match_leave:
+                    player_name = match_leave.group(1)
+                    if player_name in self.connected_players:
+                        self.connected_players.remove(player_name)
+                        if self.on_players_update_callback:
+                            self.on_players_update_callback(list(self.connected_players))
+
+                # Check for /list command manual refresh
+                # Format is usually: "There are X of a max Y players online: player1, player2"
+                match_list = re.search(r"\]:\s+There are \d+ of a max \d+ players online:(.*)", line_clean)
+                if match_list:
+                    players_string = match_list.group(1).strip()
+                    self.connected_players.clear()
+                    if players_string: # S'il y a des joueurs
+                        for p in players_string.split(","):
+                            clean_p = p.strip()
+                            if clean_p:
+                                self.connected_players.add(clean_p)
+                    
+                    if self.on_players_update_callback:
+                        self.on_players_update_callback(list(self.connected_players))
+
         self.process.stdout.close()
         self.process.wait()
         self._notify_status(False)
         self._notify_log("[Système] Le serveur est arrêté.")
+        # Clear players list on server stop
+        self.connected_players.clear()
+        if self.on_players_update_callback:
+            self.on_players_update_callback(list(self.connected_players))
 
     def send_command(self, command):
         if self.is_running and self.process and self.process.stdin:

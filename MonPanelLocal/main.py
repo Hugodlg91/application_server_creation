@@ -32,6 +32,8 @@ def main():
         system_monitor=system_monitor
     )
     
+    server_manager.on_players_update_callback = lambda players: app.after(0, app.tab_players.update_player_list, players)
+    
     # 3. Fonction pour gérer la fermeture propre
     def on_closing():
         if server_manager.is_running:

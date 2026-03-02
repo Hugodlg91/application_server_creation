@@ -2,6 +2,7 @@ import threading
 import customtkinter as ctk
 from .tab_console import TabConsole
 from .tab_settings import TabSettings
+from .tab_players import TabPlayers
 from .widget_monitor import WidgetMonitor
 
 class MainWindow(ctk.CTk):
@@ -26,6 +27,7 @@ class MainWindow(ctk.CTk):
         self.tabview.grid(row=0, column=0, padx=10, pady=(10, 0), sticky="nsew")
         
         self.tabview.add("Console")
+        self.tabview.add("Joueurs")
         self.tabview.add("Paramètres")
         
         # === Onglet Console ===
@@ -38,6 +40,13 @@ class MainWindow(ctk.CTk):
             on_version_change=self._action_version_change
         )
         self.tab_console.pack(fill="both", expand=True)
+        
+        # === Onglet Joueurs ===
+        self.tab_players = TabPlayers(
+            self.tabview.tab("Joueurs"),
+            send_command_callback=self._action_send_command
+        )
+        self.tab_players.pack(fill="both", expand=True)
         
         # === Onglet Paramètres ===
         self.tab_settings = TabSettings(

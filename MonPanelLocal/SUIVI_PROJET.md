@@ -4,7 +4,18 @@ Ce document retrace l'historique de développement, les fonctionnalités ajouté
 
 ---
 
-## ☕ Version 3.0 - Runtimes Java Dynamiques (Actuelle)
+## 👥 Version 4.0 - Gestion des Joueurs en Temps Réel (Actuelle)
+**Date :** 02 Mars 2026
+**Objectif :** Suivre les connexions et déconnexions des joueurs en direct et permettre leur modération rapide.
+
+**Modifications Apportées :**
+- **Parsing des Logs en Direct** (`server_manager.py`) : Ajout du module `re` pour intercepter les flux `joined the game` et `left the game` dans la sortie standard de Java, afin de recenser les joueurs dans un `set` Python.
+- **Ajout de l'Onglet Joueurs** (`tab_players.py` & `main_window.py`) : Interface proposant un listing de boutons via un `CTkScrollableFrame` (Op, Kick, Ban) connectés au `stdin` du processus Java.
+- **Intégration Thread-Safe** (`main.py`) : L'événement de mise à jour `on_players_update_callback` transite proprement vers le processus principal via `.after(0)` pour éviter tout crash Tkinter.
+
+---
+
+## ☕ Version 3.0 - Runtimes Java Dynamiques
 **Date :** 02 Mars 2026
 **Objectif :** Télécharger et utiliser la bonne version de Java automatiquement selon la version du serveur (indépendant de la machine hôte).
 
