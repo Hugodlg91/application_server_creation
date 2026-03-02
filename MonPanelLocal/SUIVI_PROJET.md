@@ -9,8 +9,8 @@ Ce document retrace l'historique de développement, les fonctionnalités ajouté
 **Objectif :** Suivre les connexions et déconnexions des joueurs en direct et permettre leur modération rapide.
 
 **Modifications Apportées :**
-- **Parsing des Logs en Direct** (`server_manager.py`) : Ajout du module `re` pour intercepter les flux `joined the game` et `left the game` dans la sortie standard de Java, afin de recenser les joueurs dans un `set` Python.
-- **Ajout de l'Onglet Joueurs** (`tab_players.py` & `main_window.py`) : Interface proposant un listing de boutons via un `CTkScrollableFrame` (Op, Kick, Ban) connectés au `stdin` du processus Java.
+- **Parsing des Logs en Direct & Résilience (Hotfix)** (`server_manager.py`) : Ajout du module `re` pour intercepter les flux `joined the game` et `left the game` dans la sortie standard de Java, afin de recenser les joueurs dans un `set` Python. Une routine efface les codes couleurs ANSI invisibles injectés par PaperMC et la regex capture les joueurs Bedrock (`.` ou `*`).
+- **Ajout de l'Onglet Joueurs** (`tab_players.py` & `main_window.py`) : Interface proposant un listing de boutons via un `CTkScrollableFrame` (Op, Kick, Ban) connectés au `stdin` du processus Java. Ajout d'un bouton de rafraîchissement manuel captant la commande `/list`.
 - **Intégration Thread-Safe** (`main.py`) : L'événement de mise à jour `on_players_update_callback` transite proprement vers le processus principal via `.after(0)` pour éviter tout crash Tkinter.
 
 ---

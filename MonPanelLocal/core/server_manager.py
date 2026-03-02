@@ -117,21 +117,30 @@ class ServerManager:
 
     def _read_logs(self):
         if not self.process: return
+        
+        # Outil pour nettoyer les codes couleurs invisibles de PaperMC (ANSI)
+        ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+        
         for line in iter(self.process.stdout.readline, ''):
             if line:
+                # 1. On récupère la ligne et on l'envoie à la console visuelle
                 line_clean = line.strip()
                 self._notify_log(line_clean)
                 
-                # Check for players joining
-                match_join = re.search(r"\]:\s+([a-zA-Z0-9_]+)\s+joined the game", line_clean)
+                # 2. On retire les couleurs invisibles pour que notre détecteur ne soit pas aveuglé
+                line_analyzed = ansi_escape.sub('', line_clean)
+                
+                # --- DETECTION DES CONNEXIONS ---
+                # On ajoute \. et \* pour supporter les joueurs Bedrock/Geyser
+                match_join = re.search(r"\]:\s+([a-zA-Z0-9_\.\*]+)\s+joined the game", line_analyzed)
                 if match_join:
                     player_name = match_join.group(1)
                     self.connected_players.add(player_name)
                     if self.on_players_update_callback:
                         self.on_players_update_callback(list(self.connected_players))
 
-                # Check for players leaving
-                match_leave = re.search(r"\]:\s+([a-zA-Z0-9_]+)\s+left the game", line_clean)
+                # --- DETECTION DES DECONNEXIONS ---
+                match_leave = re.search(r"\]:\s+([a-zA-Z0-9_\.\*]+)\s+left the game", line_analyzed)
                 if match_leave:
                     player_name = match_leave.group(1)
                     if player_name in self.connected_players:
@@ -139,9 +148,9 @@ class ServerManager:
                         if self.on_players_update_callback:
                             self.on_players_update_callback(list(self.connected_players))
 
-                # Check for /list command manual refresh
-                # Format is usually: "There are X of a max Y players online: player1, player2"
-                match_list = re.search(r"\]:\s+There are \d+ of a max \d+ players online:(.*)", line_clean)
+                # --- DETECTION DU BOUTON ACTUALISER (/list) ---
+                # Rendu beaucoup plus flexible pour ignorer les mots qui changent selon les versions
+                match_list = re.search(r"players online:(.*)", line_analyzed)
                 if match_list:
                     players_string = match_list.group(1).strip()
                     self.connected_players.clear()
@@ -158,7 +167,7 @@ class ServerManager:
         self.process.wait()
         self._notify_status(False)
         self._notify_log("[Système] Le serveur est arrêté.")
-        # Clear players list on server stop
+        # On vide la liste des joueurs quand le serveur s'éteint
         self.connected_players.clear()
         if self.on_players_update_callback:
             self.on_players_update_callback(list(self.connected_players))
