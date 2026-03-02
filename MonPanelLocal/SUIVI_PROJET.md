@@ -4,7 +4,18 @@ Ce document retrace l'historique de développement, les fonctionnalités ajouté
 
 ---
 
-## 👥 Version 4.0 - Gestion des Joueurs en Temps Réel (Actuelle)
+## 🧩 Version 5.0 - Gestionnaire de Plugins Modrinth (Actuelle)
+**Date :** 02 Mars 2026
+**Objectif :** Intégrer la recherche, le téléchargement et l'installation de plugins Minecraft depuis l'API Modrinth directement via l'interface du panel.
+
+**Modifications Apportées :**
+- **Nouveau Backend Modrinth** (`core/plugin_manager.py`) : Création de la classe `PluginManager` pour interroger l'API distante (`/v2/search` pour la recherche de plugins `paper`, `/v2/project/...` pour l'obtention de l'URL du fichier `.jar` compatible avec la version actuellement sélectionnée). Le téléchargement s'effectue de manière ciblée dans le dossier `plugins/` du serveur courant.
+- **Ajout de l'Onglet Plugins** (`ui/tab_plugins.py` & `ui/main_window.py`) : Nouvelle interface graphique proposant une barre de recherche. L'affichage des résultats s'effectue dynamiquement sous forme de "cartes" interactives (titre, description, bouton d'installation) dans une zone défilante (`CTkScrollableFrame`). Intégration d'une barre de progression fluide pour le suivi des téléchargements.
+- **Architecture Thread-Safe et Asynchrone** (`main.py` & `plugin_manager.py`) : Les longues requêtes HTTP (recherche sur l'API et streaming des fichiers `.jar`) s'exécutent de façon non-bloquante via `threading.Thread(daemon=True)`. La communication avec l'interface graphique (pour injecter les cartes de résultats ou mettre à jour la jauge de progression) s'opère en toute sécurité dans l'UI Thread via des callbacks utilisant `after(0)`. Le module `core` reste ainsi strictement séparé de la librairie visuelle `customtkinter`.
+
+---
+
+## 👥 Version 4.0 - Gestion des Joueurs en Temps Réel
 **Date :** 02 Mars 2026
 **Objectif :** Suivre les connexions et déconnexions des joueurs en direct et permettre leur modération rapide.
 

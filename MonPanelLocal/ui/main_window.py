@@ -4,15 +4,17 @@ from .tab_console import TabConsole
 from .tab_settings import TabSettings
 from .tab_players import TabPlayers
 from .widget_monitor import WidgetMonitor
+from .tab_plugins import TabPlugins
 
 class MainWindow(ctk.CTk):
-    def __init__(self, server_manager, config_manager, downloader, system_monitor):
+    def __init__(self, server_manager, config_manager, downloader, system_monitor, plugin_manager):
         super().__init__()
         
         self.server_manager = server_manager
         self.config_manager = config_manager
         self.downloader = downloader
         self.system_monitor = system_monitor
+        self.plugin_manager = plugin_manager
         self.current_version = None
         
         self.title("MonPanelLocal - Minecraft Server Dashboard")
@@ -29,6 +31,7 @@ class MainWindow(ctk.CTk):
         self.tabview.add("Console")
         self.tabview.add("Joueurs")
         self.tabview.add("Paramètres")
+        self.tabview.add("Plugins")
         
         # === Onglet Console ===
         self.tab_console = TabConsole(
@@ -54,6 +57,14 @@ class MainWindow(ctk.CTk):
             on_save_callback=self.config_manager.save_config
         )
         self.tab_settings.pack(fill="both", expand=True)
+        
+        # === Onglet Plugins ===
+        self.tab_plugins = TabPlugins(
+            self.tabview.tab("Plugins"),
+            on_search_callback=self._action_search_plugins,
+            on_install_callback=self._action_install_plugin
+        )
+        self.tab_plugins.pack(fill="both", expand=True)
         
         # === Monitor System Widget ===
         self.widget_monitor = WidgetMonitor(self)
@@ -136,4 +147,40 @@ class MainWindow(ctk.CTk):
             on_log_callback=on_log, 
             on_progress_callback=on_progress, 
             on_finish_callback=on_finish
+        )
+
+    def _action_search_plugins(self, query):
+        def on_success(results):
+            self.after(0, self.tab_plugins.display_results, results)
+        def on_error(err):
+            self.after(0, self.tab_plugins.reset_search_state)
+            self.after(0, self.tab_console.append_log, f"[Erreur] Recherche plugins: {err}")
+            
+        self.plugin_manager.search_plugins(query, on_success, on_error)
+
+    def _action_install_plugin(self, project_id):
+        if not self.server_manager.server_dir or not self.current_version:
+            self.tab_console.append_log("[Erreur] Impossible d'installer : Serveur non sélectionné ou installé.")
+            return
+            
+        self.tab_plugins.show_progress(True)
+        
+        def on_progress(pct):
+            self.after(0, self.tab_plugins.update_progress, pct)
+            
+        def on_finish(success):
+            def finalize():
+                self.tab_plugins.show_progress(False)
+                if success:
+                    self.tab_console.append_log(f"[Système] Plugin installé avec succès !")
+                else:
+                    self.tab_console.append_log(f"[Erreur] Echec du téléchargement du plugin. Vérifiez la compatibilité.")
+            self.after(0, finalize)
+            
+        self.plugin_manager.download_plugin(
+            project_id=project_id,
+            server_version=self.current_version,
+            server_dir=self.server_manager.server_dir,
+            progress_callback=on_progress,
+            finish_callback=on_finish
         )
