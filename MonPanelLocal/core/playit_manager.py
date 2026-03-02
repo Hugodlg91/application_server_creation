@@ -112,6 +112,9 @@ class PlayitManager:
                     if not line:
                         continue
                         
+                    if on_log:
+                        on_log(f"[Playit] {line}")
+                        
                     claim_match = re.search(r"(https://playit\.gg/claim/[a-zA-Z0-9]+)", line)
                     if claim_match and on_claim_link:
                         on_claim_link(claim_match.group(1))

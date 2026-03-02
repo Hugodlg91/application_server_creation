@@ -214,7 +214,7 @@ class MainWindow(ctk.CTk):
                 self.after(0, self.tab_console.append_log, "[Système] Démarrage de Playit.gg...")
                 
                 def on_log(msg):
-                    pass # Only append specific stuff
+                    self.after(0, self.tab_console.append_log, msg)
                     
                 def on_claim(url):
                     self.after(0, lambda: self.tab_console.show_playit_info(claim_link=url))
