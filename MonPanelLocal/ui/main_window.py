@@ -1,0 +1,130 @@
+import threading
+import customtkinter as ctk
+from .tab_console import TabConsole
+from .tab_settings import TabSettings
+from .widget_monitor import WidgetMonitor
+
+class MainWindow(ctk.CTk):
+    def __init__(self, server_manager, config_manager, downloader, system_monitor):
+        super().__init__()
+        
+        self.server_manager = server_manager
+        self.config_manager = config_manager
+        self.downloader = downloader
+        self.system_monitor = system_monitor
+        self.current_version = None
+        
+        self.title("MonPanelLocal - Minecraft Server Dashboard")
+        self.geometry("850x600")
+        self.minsize(650, 450)
+        
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_rowconfigure(1, weight=0)
+        
+        self.tabview = ctk.CTkTabview(self)
+        self.tabview.grid(row=0, column=0, padx=10, pady=(10, 0), sticky="nsew")
+        
+        self.tabview.add("Console")
+        self.tabview.add("Paramètres")
+        
+        # === Onglet Console ===
+        self.tab_console = TabConsole(
+            self.tabview.tab("Console"),
+            on_start=self._action_start,
+            on_stop=self._action_stop,
+            on_send_command=self._action_send_command,
+            on_download=self._action_download,
+            on_version_change=self._action_version_change
+        )
+        self.tab_console.pack(fill="both", expand=True)
+        
+        # === Onglet Paramètres ===
+        self.tab_settings = TabSettings(
+            self.tabview.tab("Paramètres"),
+            on_save_callback=self.config_manager.save_config
+        )
+        self.tab_settings.pack(fill="both", expand=True)
+        
+        # === Monitor System Widget ===
+        self.widget_monitor = WidgetMonitor(self)
+        self.widget_monitor.grid(row=1, column=0, padx=10, pady=10, sticky="ew")
+        
+        # Callbacks
+        self.server_manager.on_log_received = lambda msg: self.after(0, self.tab_console.append_log, msg)
+        self.server_manager.on_status_changed = lambda is_run: self.after(0, self._update_ui_status, is_run)
+        self.system_monitor.on_update_callback = lambda cpu, ram: self.after(0, self.widget_monitor.update_metrics, cpu, ram)
+        
+        # Début
+        self.system_monitor.start()
+        self._initialize_app()
+
+    def _initialize_app(self):
+        """Récupère la liste des versions au démarrage, au format asynchrone pour ne pas freezer."""
+        self.tab_console.append_log("[Système] Récupération des versions PaperMC depuis l'API...")
+        def fetch():
+            versions = self.downloader.get_versions()
+            self.after(0, self._on_versions_fetched, versions)
+        threading.Thread(target=fetch, daemon=True).start()
+
+    def _on_versions_fetched(self, versions):
+        if not versions:
+            self.tab_console.append_log("[Erreur] Impossible de charger les versions (Pas d'internet ?).")
+        else:
+            self.tab_console.append_log(f"[Système] {len(versions)} versions disponibles identifiées au lancement.")
+        self.tab_console.set_versions(versions)
+
+    def _action_version_change(self, version):
+        """Déclenchée quand l'utilisateur change la version dans le menu déroulant."""
+        self.current_version = version
+        self.server_manager.set_version(version)
+        self.config_manager.set_version(version)
+        
+        is_inst = self.server_manager.is_installed()
+        self.tab_console.update_install_state(is_inst)
+        
+        # Actualise le formulaire de config si c'est installé
+        config_dict = self.config_manager.read_config()
+        self.tab_settings.update_form(config_dict)
+
+    def _update_ui_status(self, is_running):
+        self.tab_console.set_running_state(is_running)
+        
+    def _action_start(self):
+        self.server_manager.start_server(memory_mb=1024)
+        
+    def _action_stop(self):
+        self.server_manager.stop_server()
+        
+    def _action_send_command(self, cmd):
+        self.server_manager.send_command(cmd)
+        
+    def _action_download(self):
+        if not self.current_version: return
+        
+        self.tab_console.show_progress(True)
+        self.tab_console.btn_install.configure(state="disabled")
+        
+        def on_log(msg):
+            self.after(0, self.tab_console.append_log, msg)
+            
+        def on_progress(pct):
+            self.after(0, self.tab_console.update_progress, pct)
+            
+        def on_finish(success):
+            def finalize():
+                self.tab_console.show_progress(False)
+                self.tab_console.btn_install.configure(state="normal")
+                self.tab_console.option_version.configure(state="normal")
+                if success:
+                    self.server_manager.accept_eula()
+                    self._action_version_change(self.current_version) # Rafraîchir l'UI
+                    self.tab_console.append_log(f"[Système] L'installation de la version {self.current_version} est terminée. Le bouton Démarrer est disponible.")
+            self.after(0, finalize)
+            
+        self.downloader.download_version(
+            self.current_version, 
+            on_log_callback=on_log, 
+            on_progress_callback=on_progress, 
+            on_finish_callback=on_finish
+        )
