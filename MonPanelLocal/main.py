@@ -11,7 +11,7 @@ from core.downloader import Downloader
 from core.config_manager import ConfigManager
 from core.system_monitor import SystemMonitor
 from core.plugin_manager import PluginManager
-from core.tunnel_manager import TunnelManager
+from core.playit_manager import PlayitManager
 from ui.main_window import MainWindow
 
 
@@ -26,7 +26,7 @@ def main():
     config_manager = ConfigManager()
     system_monitor = SystemMonitor(on_update_callback=None) # Le callback est attaché plus tard par la fenêtre
     plugin_manager = PluginManager()
-    tunnel_manager = TunnelManager()
+    playit_manager = PlayitManager()
     
     # 2. Création de l'interface graphique (Frontend), en injectant les dépendances
     app = MainWindow(
@@ -35,15 +35,15 @@ def main():
         downloader=downloader,
         system_monitor=system_monitor,
         plugin_manager=plugin_manager,
-        tunnel_manager=tunnel_manager
+        playit_manager=playit_manager
     )
     
     server_manager.on_players_update_callback = lambda players: app.after(0, app.tab_players.update_player_list, players)
     
     # 3. Fonction pour gérer la fermeture propre
     def on_closing():
-        # Arrêt immédiat de ngrok et autres services non-process
-        tunnel_manager.stop_tunnel()
+        # Arrêt immédiat de playit et autres services non-process
+        playit_manager.stop()
         
         if server_manager.is_running:
             server_manager.on_log_received("[Système] Arrêt automatique du serveur avant la fermeture...")

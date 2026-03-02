@@ -7,7 +7,7 @@ from .widget_monitor import WidgetMonitor
 from .tab_plugins import TabPlugins
 
 class MainWindow(ctk.CTk):
-    def __init__(self, server_manager, config_manager, downloader, system_monitor, plugin_manager, tunnel_manager):
+    def __init__(self, server_manager, config_manager, downloader, system_monitor, plugin_manager, playit_manager):
         super().__init__()
         
         self.server_manager = server_manager
@@ -15,9 +15,9 @@ class MainWindow(ctk.CTk):
         self.downloader = downloader
         self.system_monitor = system_monitor
         self.plugin_manager = plugin_manager
-        self.tunnel_manager = tunnel_manager
+        self.playit_manager = playit_manager
         self.current_version = None
-        self.tunnel_active = False
+        self.playit_active = False
         
         self.title("MonPanelLocal - Minecraft Server Dashboard")
         self.geometry("850x600")
@@ -43,7 +43,7 @@ class MainWindow(ctk.CTk):
             on_send_command=self._action_send_command,
             on_download=self._action_download,
             on_version_change=self._action_version_change,
-            on_tunnel_toggle=self._action_toggle_tunnel
+            on_playit_toggle=self._action_toggle_playit
         )
         self.tab_console.pack(fill="both", expand=True)
         
@@ -188,30 +188,43 @@ class MainWindow(ctk.CTk):
             finish_callback=on_finish
         )
 
-    def _action_toggle_tunnel(self):
-        if self.tunnel_active:
-            self.tab_console.btn_tunnel.configure(state="disabled")
-            def on_stopped():
-                self.tunnel_active = False
-                self.after(0, lambda: self.tab_console.set_tunnel_state(False))
-                self.after(0, lambda: self.tab_console.btn_tunnel.configure(state="normal"))
-                self.after(0, self.tab_console.append_log, "[Système] Accès public fermé.")
-            self.tunnel_manager.stop_tunnel(callback_stopped=on_stopped)
+    def _action_toggle_playit(self):
+        if self.playit_active:
+            self.tab_console.btn_playit.configure(state="disabled")
+            self.playit_manager.stop()
+            self.playit_active = False
+            self.tab_console.set_playit_state(False)
+            self.tab_console.btn_playit.configure(state="normal")
+            self.tab_console.append_log("[Système] Playit.gg arrêté.")
         else:
-            self.tab_console.btn_tunnel.configure(state="disabled")
+            self.tab_console.btn_playit.configure(state="disabled")
             
-            # Récupération du port depuis server.properties ou port par défaut
-            config = self.config_manager.read_config()
-            port = int(config.get("server-port", 25565))
-            
-            def on_success(ip):
-                self.tunnel_active = True
-                self.after(0, lambda: self.tab_console.set_tunnel_state(True, ip))
-                self.after(0, lambda: self.tab_console.btn_tunnel.configure(state="normal"))
-                self.after(0, self.tab_console.append_log, f"[Système] Tunnel ouvert ! IP publique : {ip}")
+            def check_download_progress(pct):
+                pass # You can link it to a progress bar if desired
                 
-            def on_error(err):
-                self.after(0, lambda: self.tab_console.btn_tunnel.configure(state="normal"))
-                self.after(0, self.tab_console.append_log, f"[Erreur] Tunnel ngrok: {err}")
+            def start_process():
+                if not self.playit_manager.ensure_downloaded(progress_callback=check_download_progress):
+                    self.after(0, lambda: self.tab_console.btn_playit.configure(state="normal"))
+                    self.after(0, self.tab_console.append_log, "[Erreur] Impossible de télécharger ou trouver l'exécutable playit.")
+                    return
+                    
+                self.playit_active = True
+                self.after(0, lambda: self.tab_console.set_playit_state(True))
+                self.after(0, lambda: self.tab_console.btn_playit.configure(state="normal"))
+                self.after(0, self.tab_console.append_log, "[Système] Démarrage de Playit.gg...")
                 
-            self.tunnel_manager.start_tunnel(port, on_success, on_error)
+                def on_log(msg):
+                    pass # Only append specific stuff
+                    
+                def on_claim(url):
+                    self.after(0, lambda: self.tab_console.show_playit_info(claim_link=url))
+                    self.after(0, self.tab_console.append_log, f"[Playit] Lien de réclamation généré: {url}")
+                    
+                def on_ip(ip):
+                    self.after(0, lambda: self.tab_console.show_playit_info(ip=ip))
+                    self.after(0, self.tab_console.append_log, f"[Playit] IP publique allouée: {ip}")
+                    
+                self.playit_manager.start(on_log, on_claim, on_ip)
+                
+            import threading
+            threading.Thread(target=start_process, daemon=True).start()

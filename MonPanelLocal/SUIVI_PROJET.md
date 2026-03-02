@@ -4,14 +4,15 @@ Ce document retrace l'historique de développement, les fonctionnalités ajouté
 
 ---
 
-## 🌐 Version 5.1 - Tunneling Local avec pyngrok (Actuelle)
+## 🌐 Version 5.1 - Tunneling Local "Plug & Play" avec Playit.gg (Actuelle)
 **Date :** 02 Mars 2026
-**Objectif :** Permettre de rendre le serveur Minecraft accessible publiquement sur internet sans ouvrir les ports du routeur grâce à ngrok.
+**Objectif :** Remplacer ngrok (limité par les règles d'authentification) par Playit.gg afin de rendre le serveur Minecraft accessible publiquement de manière totalement "Plug & Play", sans aucune configuration de compte requise.
 
 **Modifications Apportées :**
-- **Nouveau Backend Tunneling** (`core/tunnel_manager.py`) : Implémentation de la classe `TunnelManager` wrapper asynchrone pour la bibliothèque `pyngrok`. Permet d'ouvrir un tunnel TCP dynamique et de retourner une adresse de connexion épurée (retrait automatique du préfixe `tcp://`). La fonction de fermeture tue proprement l'exécutable ngrok associé.
-- **Intégration Interface** (`ui/tab_console.py`) : Ajout d'un bouton de bascule "🌐 Rendre Public" ainsi que d'un champ de lecture (Entry) permettant aux administrateurs de récupérer et copier l'adresse IP et port générés. L'état du bouton passe au rouge une fois actif pour faciliter la fermeture manuelle.
-- **Couplage Global et Extinction Propre** (`ui/main_window.py` & `main.py`) : Interconnexion avec l'hôte principal et le système de callbacks thread-safe. À la fermeture du programme global, un appel de fin est garanti (`tunnel_manager.stop_tunnel()`) pour éviter d'avoir des processus ngrok fantômes en arrière-plan.
+- **Nouveau Backend Tunneling** (`core/playit_manager.py`) : Implémentation du `PlayitManager`. Ce module télécharge intelligemment l'exécutable natif `playit` depuis GitHub selon l'OS (Windows, Linux, macOS) et l'architecture (x86_64, aarch64). Il exécute ensuite ce processus en arrière-plan (daemon) et intercepte sa sortie standard en continu.
+- **Récupération de l'IP Automatique par Regex** : Un parser de logs interprète l'output de `playit` pour y extraire automatiquement en cours de route l'URL de réclamation (pour lier le tunnel à son compte si on le souhaite) ainsi que l'adresse IP de jeu allouée publiquement.
+- **Intégration Interface** (`ui/tab_console.py`) : Remplacement du bouton tunnel par "🌐 Activer Playit.gg". L'interface injecte deux nouveaux champs textuels (`entry_claim_link` et `entry_playit_ip`) affichés dynamiquement selon les événements expédiés par le backend via `.after(0)`.
+- **Couplage Global et Extinction Propre** (`ui/main_window.py` & `main.py`) : À la fermeture de la fenêtre de l'application, un appel de fin est garanti (`playit_manager.stop()`) pour tuer silencieusement le sous-processus `playit` orphelin de son processus parent.
 
 ---
 
