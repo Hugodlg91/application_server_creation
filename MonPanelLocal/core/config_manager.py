@@ -142,3 +142,32 @@ class ConfigManager:
                 json.dump(data, f, indent=2)
         except Exception:
             pass
+
+    def load_lang(self) -> str:
+        """Retourne la langue sauvegardée (défaut : 'fr')."""
+        path = os.path.join(self.base_dir, "panel_config.json")
+        if not os.path.exists(path):
+            return "fr"
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            return data.get("lang", "fr")
+        except Exception:
+            return "fr"
+
+    def save_lang(self, lang: str):
+        """Sauvegarde la langue sans écraser les autres clés de panel_config.json."""
+        path = os.path.join(self.base_dir, "panel_config.json")
+        data = {}
+        if os.path.exists(path):
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+            except Exception:
+                pass
+        data["lang"] = lang
+        try:
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2)
+        except Exception:
+            pass

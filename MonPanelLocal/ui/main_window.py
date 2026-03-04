@@ -1,5 +1,6 @@
 import threading
 import customtkinter as ctk
+from core.i18n import t
 
 from .header_bar import HeaderBar
 from .tab_bar import TabBar
@@ -27,7 +28,7 @@ class MainWindow(ctk.CTk):
         self.bore_manager = bore_manager
 
         self.configure(fg_color=BG)
-        self.title("MonPanelLocal - Minecraft Server Dashboard")
+        self.title(t("app.title"))
         self.geometry("950x680")
         self.minsize(700, 500)
 
@@ -72,7 +73,8 @@ class MainWindow(ctk.CTk):
             on_load_perf_callback=self.config_manager.load_performance_config,
             on_save_perf_callback=self.config_manager.save_performance_config,
             on_start_scheduler=lambda msg, interval: self.server_manager.start_scheduler(msg, interval),
-            on_stop_scheduler=lambda: self.server_manager.stop_scheduler()
+            on_stop_scheduler=lambda: self.server_manager.stop_scheduler(),
+            on_save_lang_callback=self.config_manager.save_lang
         )
 
         # === Onglet Plugins ===
@@ -105,7 +107,6 @@ class MainWindow(ctk.CTk):
     # ── Navigation ────────────────────────────────────────────────────────────
 
     def _show_tab(self, tab_id):
-        # tab_id = clé minuscule envoyée par TabBar ("console", "joueurs", …)
         tabs = {
             "console":    self.tab_console,
             "joueurs":    self.tab_players,
@@ -122,7 +123,7 @@ class MainWindow(ctk.CTk):
         self.current_server_type = saved_type
         self.tab_console.option_type.set(saved_type)
         self.after(0, self.tab_console.append_log,
-                   f"[Système] Récupération des versions {saved_type} depuis l'API...")
+                   f"[Système] {t('console.system_fetching')}")
 
         def fetch():
             versions = self.downloader.get_versions(saved_type)
@@ -134,11 +135,11 @@ class MainWindow(ctk.CTk):
         self.tab_console.set_loading_state(False)
         if not versions:
             self.tab_console.append_log(
-                "[Erreur] Impossible de charger les versions (Pas d'internet ?).")
+                f"[Erreur] {t('console.api_error')}")
         else:
             server_type = getattr(self, "current_server_type", "PaperMC")
             self.tab_console.append_log(
-                f"[Système] {len(versions)} versions {server_type} disponibles.")
+                f"[Système] {len(versions)} {t('console.system_versions_available')}")
         self.tab_console.set_versions(versions)
 
     # ── Actions ───────────────────────────────────────────────────────────────
@@ -190,6 +191,7 @@ class MainWindow(ctk.CTk):
 
     def _action_download(self):
         if not hasattr(self, "current_version") or not self.current_version:
+            self.tab_console.append_log(f"[Erreur] {t('app.no_version_selected')}")
             return
         server_type = getattr(self, "current_server_type", "PaperMC")
 
@@ -212,7 +214,7 @@ class MainWindow(ctk.CTk):
                     self.server_manager.accept_eula()
                     self._action_version_change(self.current_version)
                     self.tab_console.append_log(
-                        f"[Système] Installation {server_type} {self.current_version} terminée !")
+                        f"[Système] {t('app.install_done')}")
             self.after(0, finalize)
 
         def prepare_and_download():
@@ -243,14 +245,14 @@ class MainWindow(ctk.CTk):
         def on_error(err):
             self.after(0, self.tab_plugins.reset_search_state)
             self.after(0, self.tab_console.append_log,
-                       f"[Erreur] Recherche plugins: {err}")
+                       f"[Erreur] {t('app.search_error')}: {err}")
 
         self.plugin_manager.search_plugins(query, on_success, on_error)
 
     def _action_install_plugin(self, project_id):
         if not self.server_manager.server_dir or not self.current_version:
             self.tab_console.append_log(
-                "[Erreur] Impossible d'installer : Serveur non sélectionné ou installé.")
+                f"[Erreur] {t('app.plugin_error')}")
             return
 
         self.tab_plugins.show_progress(True)
@@ -262,10 +264,11 @@ class MainWindow(ctk.CTk):
             def finalize():
                 self.tab_plugins.show_progress(False)
                 if success:
-                    self.tab_console.append_log("[Système] Plugin installé avec succès !")
+                    self.tab_console.append_log(
+                        f"[Système] {t('app.plugin_installed')}")
                 else:
                     self.tab_console.append_log(
-                        "[Erreur] Echec du téléchargement du plugin. Vérifiez la compatibilité.")
+                        f"[Erreur] {t('app.plugin_error')}")
             self.after(0, finalize)
 
         self.plugin_manager.download_plugin(
@@ -282,7 +285,7 @@ class MainWindow(ctk.CTk):
             self.bore_manager.stop()
             self.tab_console.set_bore_state(False)
             self.tab_console.btn_bore.configure(state="normal")
-            self.tab_console.append_log("[Système] Tunnel Bore arrêté.")
+            self.tab_console.append_log(f"[Système] {t('console.system_bore_stopped')}")
         else:
             self.tab_console.btn_bore.configure(state="disabled")
 
@@ -293,13 +296,13 @@ class MainWindow(ctk.CTk):
                 if not self.bore_manager.ensure_downloaded(on_log=on_log_prep):
                     self.after(0, lambda: self.tab_console.btn_bore.configure(state="normal"))
                     self.after(0, self.tab_console.append_log,
-                               "[Erreur] Impossible de préparer l'exécutable Bore.")
+                               f"[Erreur] {t('app.bore_error')}")
                     return
 
                 self.after(0, lambda: self.tab_console.set_bore_state(True))
                 self.after(0, lambda: self.tab_console.btn_bore.configure(state="normal"))
                 self.after(0, self.tab_console.append_log,
-                           "[Système] Démarrage de Bore sur le port 25565...")
+                           f"[Système] {t('console.system_bore_starting')}")
 
                 port = 25565
                 try:
@@ -316,7 +319,7 @@ class MainWindow(ctk.CTk):
                     if ip:
                         self.after(0, lambda: self.tab_console.set_bore_state(True, ip))
                         self.after(0, self.tab_console.append_log,
-                                   f"[Bore] IP publique allouée: {ip}")
+                                   f"[Bore] {t('console.system_bore_ip')}: {ip}")
 
                 self.bore_manager.start(port, on_log, on_ip)
 

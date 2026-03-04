@@ -1,4 +1,5 @@
 import customtkinter as ctk
+from core.i18n import t
 
 BG       = "#0f172a"
 SURFACE  = "#1e293b"
@@ -82,7 +83,7 @@ class HeaderBar(ctk.CTkFrame):
                                         corner_radius=12)
         self.pill_status.pack(side="right", padx=(10, 0))
         self.lbl_status = ctk.CTkLabel(
-            self.pill_status, text="● Éteint",
+            self.pill_status, text=f"● {t('header.offline')}",
             font=ctk.CTkFont(size=11, weight="bold"), text_color=TEXT)
         self.lbl_status.pack(padx=14, pady=6)
 
@@ -129,10 +130,11 @@ class HeaderBar(ctk.CTkFrame):
             self.pill_status.configure(fg_color=GREEN_TINT)
             s = "s" if player_count > 1 else ""
             self.lbl_status.configure(
-                text=f"● En ligne · {player_count} joueur{s}", text_color=GREEN)
+                text=f"● {t('header.online')} · {player_count} joueur{s}", text_color=GREEN)
         else:
             self.pill_status.configure(fg_color=MUTED)
-            self.lbl_status.configure(text="● Éteint", text_color=TEXT)
+            self.lbl_status.configure(
+                text=f"● {t('header.offline')}", text_color=TEXT)
 
     def update_metrics(self, cpu_percent, ram_percent):
         self.pb_cpu.set(cpu_percent / 100.0)

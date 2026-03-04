@@ -13,6 +13,8 @@ from core.config_manager import ConfigManager
 from core.system_monitor import SystemMonitor
 from core.plugin_manager import PluginManager
 from core.bore_manager import BoreManager
+from core import i18n
+from core.i18n import t
 from ui.main_window import MainWindow
 
 
@@ -28,6 +30,9 @@ def main():
     system_monitor = SystemMonitor(on_update_callback=None) # Le callback est attaché plus tard par la fenêtre
     plugin_manager = PluginManager()
     bore_manager = BoreManager()
+
+    # 1b. Appliquer la langue sauvegardée avant toute création de widget
+    i18n.set_lang(config_manager.load_lang())
     
     # 2. Création de l'interface graphique (Frontend), en injectant les dépendances
     app = MainWindow(
@@ -48,9 +53,9 @@ def main():
         if server_manager.is_running:
             # Bloquer les clics supplémentaires sur la croix
             app.protocol("WM_DELETE_WINDOW", lambda: None)
-            app.title("MonPanelLocal — Arrêt en cours...")
+            app.title(t("app.closing_title"))
             app.tab_console.append_log(
-                "[Système] Arrêt du serveur en cours, veuillez patienter...")
+                f"[Système] {t('app.closing_log')}")
             server_manager.stop_server()
 
             def _wait_and_close():

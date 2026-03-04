@@ -1,4 +1,5 @@
 import customtkinter as ctk
+from core.i18n import t
 
 BG       = "#0f172a"
 SURFACE  = "#1e293b"
@@ -48,10 +49,10 @@ class TabPlayers(ctk.CTkFrame):
 
         frame_titles = ctk.CTkFrame(self.frame_top, fg_color="transparent")
         frame_titles.grid(row=0, column=0, padx=12, pady=10, sticky="w")
-        ctk.CTkLabel(frame_titles, text="Joueurs connectés",
+        ctk.CTkLabel(frame_titles, text=t("players.title"),
                      font=ctk.CTkFont(size=14, weight="bold"), text_color=TEXT
                      ).pack(anchor="w")
-        ctk.CTkLabel(frame_titles, text="Gérez les joueurs en temps réel",
+        ctk.CTkLabel(frame_titles, text=t("players.subtitle"),
                      font=ctk.CTkFont(size=11), text_color=SUB
                      ).pack(anchor="w")
 
@@ -60,13 +61,13 @@ class TabPlayers(ctk.CTkFrame):
                                        border_color=BORDER, border_width=1,
                                        corner_radius=20)
         self.pill_count.grid(row=0, column=1, padx=8, pady=10, sticky="w")
-        self.lbl_count = ctk.CTkLabel(self.pill_count, text="0 joueur",
+        self.lbl_count = ctk.CTkLabel(self.pill_count, text=t("players.count_one").replace("1 ", "0 "),
                                       font=ctk.CTkFont(size=11, weight="bold"),
                                       text_color=MUTED)
         self.lbl_count.pack(padx=14, pady=5)
 
         self.btn_refresh = ctk.CTkButton(
-            self.frame_top, text="↻  Actualiser", width=110,
+            self.frame_top, text=f"↻  {t('players.refresh')}", width=110,
             fg_color=SURFACE, hover_color=BG,
             border_color=BORDER, border_width=1,
             text_color=SUB,
@@ -89,11 +90,11 @@ class TabPlayers(ctk.CTkFrame):
         frame = ctk.CTkFrame(self.scroll_frame, fg_color="transparent")
         frame.grid(row=0, column=0, pady=60, sticky="ew")
         frame.grid_columnconfigure(0, weight=1)
-        ctk.CTkLabel(frame, text="Serveur vide",
+        ctk.CTkLabel(frame, text=t("players.empty_title"),
                      font=ctk.CTkFont(size=16, weight="bold"),
                      text_color=TEXT
                      ).grid(row=0, column=0)
-        ctk.CTkLabel(frame, text="Aucun joueur connecté pour le moment.",
+        ctk.CTkLabel(frame, text=t("players.empty_sub"),
                      font=ctk.CTkFont(size=12), text_color=MUTED
                      ).grid(row=1, column=0, pady=(4, 0))
 
@@ -128,13 +129,17 @@ class TabPlayers(ctk.CTkFrame):
 
         count = len(players)
         if count == 0:
-            self.lbl_count.configure(text="0 joueur", text_color=MUTED)
+            self.lbl_count.configure(text=t("players.count_one").replace("1 ", "0 "),
+                                     text_color=MUTED)
             self.pill_count.configure(fg_color=BG)
             self._show_empty_state()
             return
 
-        s = "s" if count > 1 else ""
-        self.lbl_count.configure(text=f"{count} joueur{s}", text_color=GREEN)
+        if count == 1:
+            count_txt = t("players.count_one")
+        else:
+            count_txt = t("players.count_many").format(n=count)
+        self.lbl_count.configure(text=count_txt, text_color=GREEN)
         self.pill_count.configure(fg_color=GREEN_TINT)
 
         for idx, player in enumerate(sorted(players)):
@@ -168,7 +173,7 @@ class TabPlayers(ctk.CTkFrame):
                          text_color=TEXT
                          ).pack(side="left")
 
-            ctk.CTkLabel(card, text="En ligne",
+            ctk.CTkLabel(card, text=t("players.online"),
                          font=ctk.CTkFont(size=10), text_color=SUB
                          ).grid(row=1, column=1, padx=(0, 8), pady=(0, 10), sticky="w")
 

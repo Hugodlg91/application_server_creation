@@ -1,4 +1,5 @@
 import customtkinter as ctk
+from core.i18n import t
 
 BG       = "#0f172a"
 SURFACE  = "#1e293b"
@@ -33,7 +34,7 @@ class TabPlugins(ctk.CTkFrame):
 
         self.entry_search = ctk.CTkEntry(
             self.frame_search,
-            placeholder_text="Rechercher un plugin Modrinth...",
+            placeholder_text=t("plugins.search_placeholder"),
             fg_color=BG, border_color=BORDER,
             text_color=TEXT, placeholder_text_color=MUTED,
             height=36, border_width=0)
@@ -41,7 +42,7 @@ class TabPlugins(ctk.CTkFrame):
         self.entry_search.bind("<Return>", lambda e: self._on_search_click())
 
         self.btn_search = ctk.CTkButton(
-            self.frame_search, text="Rechercher", width=120, height=36,
+            self.frame_search, text=t("plugins.search_btn"), width=120, height=36,
             fg_color=ACCENT, hover_color=ACCENT2,
             command=self._on_search_click)
         self.btn_search.grid(row=0, column=1, padx=(0, 10), pady=10)
@@ -71,11 +72,10 @@ class TabPlugins(ctk.CTkFrame):
         frame = ctk.CTkFrame(self.scroll_results, fg_color="transparent")
         frame.grid(row=0, column=0, pady=60, sticky="ew")
         frame.grid_columnconfigure(0, weight=1)
-        ctk.CTkLabel(frame, text="Trouver des plugins",
+        ctk.CTkLabel(frame, text=t("plugins.prompt_title"),
                      font=ctk.CTkFont(size=16, weight="bold"), text_color=TEXT
                      ).grid(row=0, column=0)
-        ctk.CTkLabel(frame,
-                     text="Recherchez sur Modrinth pour découvrir et installer des plugins.",
+        ctk.CTkLabel(frame, text=t("plugins.prompt_sub"),
                      font=ctk.CTkFont(size=12), text_color=MUTED
                      ).grid(row=1, column=0, pady=(4, 0))
 
@@ -83,10 +83,10 @@ class TabPlugins(ctk.CTkFrame):
         frame = ctk.CTkFrame(self.scroll_results, fg_color="transparent")
         frame.grid(row=0, column=0, pady=60, sticky="ew")
         frame.grid_columnconfigure(0, weight=1)
-        ctk.CTkLabel(frame, text="Aucun résultat",
+        ctk.CTkLabel(frame, text=t("plugins.no_results_title"),
                      font=ctk.CTkFont(size=15, weight="bold"), text_color=TEXT
                      ).grid(row=0, column=0)
-        hint = f"Aucun plugin trouvé pour « {query} »." if query else "Essayez avec d'autres mots-clés."
+        hint = t("plugins.no_results_hint") if not query else t("plugins.no_results_hint")
         ctk.CTkLabel(frame, text=hint,
                      font=ctk.CTkFont(size=12), text_color=MUTED
                      ).grid(row=1, column=0, pady=(4, 0))
@@ -114,11 +114,11 @@ class TabPlugins(ctk.CTkFrame):
     def _on_search_click(self):
         query = self.entry_search.get().strip()
         if query:
-            self.btn_search.configure(state="disabled", text="Recherche…")
+            self.btn_search.configure(state="disabled", text=t("plugins.searching"))
             self.on_search_callback(query)
 
     def reset_search_state(self):
-        self.btn_search.configure(state="normal", text="Rechercher")
+        self.btn_search.configure(state="normal", text=t("plugins.search_btn"))
 
     # ── Rendu des résultats ──────────────────────────────────────────────────
 
@@ -177,7 +177,7 @@ class TabPlugins(ctk.CTkFrame):
 
             # Bouton installer
             ctk.CTkButton(
-                card, text="↓  Installer", width=110,
+                card, text=f"↓  {t('plugins.install')}", width=110,
                 fg_color=ACCENT, hover_color=ACCENT2,
                 command=lambda pid=project_id: self._on_install_click(pid)
             ).grid(row=0, column=2, rowspan=2, padx=12, pady=12)

@@ -1,4 +1,5 @@
 import customtkinter as ctk
+from core.i18n import t
 
 BG       = "#0f172a"
 SURFACE  = "#1e293b"
@@ -15,11 +16,12 @@ class TabBar(ctk.CTkFrame):
     évite le segfault canvas Linux avant mapping fenêtre WM).
     """
 
+    # tab_id → clé i18n
     TABS = [
-        ("console",    "Console"),
-        ("joueurs",    "Joueurs"),
-        ("plugins",    "Plugins"),
-        ("parametres", "Paramètres"),
+        ("console",    "tabs.console"),
+        ("joueurs",    "tabs.players"),
+        ("plugins",    "tabs.plugins"),
+        ("parametres", "tabs.settings"),
     ]
 
     def __init__(self, master, on_tab_change, **kwargs):
@@ -30,7 +32,7 @@ class TabBar(ctk.CTkFrame):
         self._indicators = {}   # tab_id → CTkFrame (barre 2px)
         self._badge_label = None
 
-        for tab_id, label in self.TABS:
+        for tab_id, i18n_key in self.TABS:
             # Conteneur vertical par onglet
             col = ctk.CTkFrame(self, fg_color="transparent", cursor="hand2")
             col.pack(side="left")
@@ -38,7 +40,7 @@ class TabBar(ctk.CTkFrame):
             # Label cliquable (pas de canvas → pas de segfault)
             lbl = ctk.CTkLabel(
                 col,
-                text=label,
+                text=t(i18n_key),
                 font=ctk.CTkFont(size=13),
                 padx=16, pady=10,
                 cursor="hand2"

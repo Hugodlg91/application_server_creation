@@ -1,4 +1,6 @@
 import customtkinter as ctk
+from core.i18n import t
+from core import i18n
 
 BG       = "#0f172a"
 SURFACE  = "#1e293b"
@@ -21,13 +23,14 @@ class TabSettings(ctk.CTkFrame):
 
     def __init__(self, master, on_save_callback, on_load_perf_callback,
                  on_save_perf_callback, on_start_scheduler=None,
-                 on_stop_scheduler=None, **kwargs):
+                 on_stop_scheduler=None, on_save_lang_callback=None, **kwargs):
         super().__init__(master, fg_color=BG, **kwargs)
         self.on_save_callback = on_save_callback
         self.on_load_perf_callback = on_load_perf_callback
         self.on_save_perf_callback = on_save_perf_callback
         self.on_start_scheduler = on_start_scheduler
         self.on_stop_scheduler = on_stop_scheduler
+        self.on_save_lang_callback = on_save_lang_callback
 
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
@@ -48,6 +51,9 @@ class TabSettings(ctk.CTkFrame):
         # ── Section : Planificateur ──────────────────────────────────────────
         self._build_scheduler_section()
 
+        # ── Section : Langue ─────────────────────────────────────────────────
+        self._build_lang_section()
+
         # Pré-remplissage config perf
         perf = self.on_load_perf_callback()
         self.option_ram.set(f"{perf['ram_mb']} Mo")
@@ -60,7 +66,7 @@ class TabSettings(ctk.CTkFrame):
 
     # ── Constructeurs de sections ─────────────────────────────────────────────
 
-    def _make_section_card(self, title, icon=""):
+    def _make_section_card(self, title_key, icon=""):
         """Crée un cadre SURFACE avec titre de section et badge icône optionnel."""
         card = ctk.CTkFrame(self.scroll_container, fg_color=SURFACE,
                             border_color=BORDER, border_width=1,
@@ -76,26 +82,27 @@ class TabSettings(ctk.CTkFrame):
                          font=ctk.CTkFont(size=14), text_color=ACCENT
                          ).pack(side="left", padx=(0, 6))
 
-        ctk.CTkLabel(hdr, text=title.upper(),
+        ctk.CTkLabel(hdr, text=t(title_key).upper(),
                      font=ctk.CTkFont(size=10, weight="bold"), text_color=SUB
                      ).pack(side="left")
 
         return card
 
     def _build_properties_section(self):
-        card = self._make_section_card("Paramètres du serveur")
+        card = self._make_section_card("settings.section_server")
 
         self.entries = {}
+        # (config key → i18n key)
         properties = {
-            "server-port":  "Port du serveur",
-            "max-players":  "Joueurs maximum",
-            "motd":         "Message du jour (MOTD)",
-            "difficulty":   "Difficulté",
-            "gamemode":     "Mode de jeu",
+            "server-port":  "settings.port",
+            "max-players":  "settings.max_players",
+            "motd":         "settings.motd",
+            "difficulty":   "settings.difficulty",
+            "gamemode":     "settings.gamemode",
         }
 
-        for row_i, (key, label_text) in enumerate(properties.items(), start=1):
-            ctk.CTkLabel(card, text=label_text, text_color=SUB,
+        for row_i, (key, i18n_key) in enumerate(properties.items(), start=1):
+            ctk.CTkLabel(card, text=t(i18n_key), text_color=SUB,
                          font=ctk.CTkFont(size=12), width=210, anchor="w"
                          ).grid(row=row_i, column=0, padx=(14, 6),
                                 pady=5, sticky="w")
@@ -107,7 +114,7 @@ class TabSettings(ctk.CTkFrame):
         # Bouton + statut
         row_save = len(properties) + 1
         self.btn_save = ctk.CTkButton(
-            card, text="Sauvegarder",
+            card, text=t("settings.save"),
             fg_color=ACCENT, hover_color=ACCENT2,
             command=self._on_save_clicked)
         self.btn_save.grid(row=row_save, column=0, columnspan=2,
@@ -118,10 +125,10 @@ class TabSettings(ctk.CTkFrame):
                              padx=14, pady=(0, 12))
 
     def _build_perf_section(self):
-        self.frm_perf = self._make_section_card("Performances du serveur")
+        self.frm_perf = self._make_section_card("settings.section_perf")
         self.frm_perf.grid_columnconfigure(1, weight=1)
 
-        ctk.CTkLabel(self.frm_perf, text="RAM allouée",
+        ctk.CTkLabel(self.frm_perf, text=t("settings.ram"),
                      text_color=SUB, font=ctk.CTkFont(size=12)
                      ).grid(row=1, column=0, padx=14, pady=5, sticky="w")
         self.option_ram = ctk.CTkOptionMenu(
@@ -135,19 +142,18 @@ class TabSettings(ctk.CTkFrame):
 
         self.switch_aikar = ctk.CTkSwitch(
             self.frm_perf,
-            text="Activer les optimisations Aikar Flags",
+            text=t("settings.aikar"),
             text_color=TEXT, progress_color=ACCENT, button_color=TEXT)
         self.switch_aikar.grid(row=2, column=0, columnspan=2,
                                padx=14, pady=(6, 2), sticky="w")
 
-        ctk.CTkLabel(self.frm_perf,
-                     text="Réduit les lags et optimise le garbage collector Java",
+        ctk.CTkLabel(self.frm_perf, text=t("settings.aikar_desc"),
                      text_color=SUB, font=ctk.CTkFont(size=11)
                      ).grid(row=3, column=0, columnspan=2,
                             padx=14, pady=(0, 6), sticky="w")
 
         self.btn_save_perf = ctk.CTkButton(
-            self.frm_perf, text="Sauvegarder les performances",
+            self.frm_perf, text=t("settings.save_perf"),
             fg_color=ACCENT, hover_color=ACCENT2,
             command=self._on_save_perf_clicked)
         self.btn_save_perf.grid(row=4, column=0, columnspan=2,
@@ -159,21 +165,21 @@ class TabSettings(ctk.CTkFrame):
                                   padx=14, pady=(0, 12))
 
     def _build_scheduler_section(self):
-        self.frm_scheduler = self._make_section_card("Planificateur de messages")
+        self.frm_scheduler = self._make_section_card("settings.section_scheduler")
         self.frm_scheduler.grid_columnconfigure(1, weight=1)
 
-        ctk.CTkLabel(self.frm_scheduler, text="Message",
+        ctk.CTkLabel(self.frm_scheduler, text=t("settings.scheduler_msg"),
                      text_color=SUB, font=ctk.CTkFont(size=12)
                      ).grid(row=1, column=0, padx=14, pady=5, sticky="w")
         self.entry_scheduler_msg = ctk.CTkEntry(
             self.frm_scheduler,
-            placeholder_text="Bienvenue sur le serveur !",
+            placeholder_text=t("settings.scheduler_msg_placeholder"),
             fg_color=BG, border_color=BORDER, text_color=TEXT,
             placeholder_text_color=MUTED)
         self.entry_scheduler_msg.grid(row=1, column=1, padx=(0, 14),
                                       pady=5, sticky="ew")
 
-        ctk.CTkLabel(self.frm_scheduler, text="Intervalle",
+        ctk.CTkLabel(self.frm_scheduler, text=t("settings.scheduler_interval"),
                      text_color=SUB, font=ctk.CTkFont(size=12)
                      ).grid(row=2, column=0, padx=14, pady=5, sticky="w")
         self.option_scheduler_interval = ctk.CTkOptionMenu(
@@ -188,11 +194,40 @@ class TabSettings(ctk.CTkFrame):
 
         self.switch_scheduler = ctk.CTkSwitch(
             self.frm_scheduler,
-            text="Activer le planificateur",
+            text=t("settings.scheduler_enable"),
             text_color=TEXT, progress_color=ACCENT, button_color=TEXT,
             command=self._on_scheduler_toggled)
         self.switch_scheduler.grid(row=3, column=0, columnspan=2,
                                    padx=14, pady=(6, 14), sticky="w")
+
+    def _build_lang_section(self):
+        self.frm_lang = self._make_section_card("settings.section_lang")
+        self.frm_lang.grid_columnconfigure(1, weight=1)
+
+        ctk.CTkLabel(self.frm_lang, text=t("settings.lang_label"),
+                     text_color=SUB, font=ctk.CTkFont(size=12)
+                     ).grid(row=1, column=0, padx=14, pady=(10, 5), sticky="w")
+
+        # Map display → lang code
+        self._lang_map = {"Français": "fr", "English": "en"}
+        current_display = "English" if i18n.get_lang() == "en" else "Français"
+
+        self.option_lang = ctk.CTkOptionMenu(
+            self.frm_lang,
+            values=["Français", "English"],
+            fg_color=BG, button_color=ACCENT,
+            button_hover_color=ACCENT2, text_color=TEXT,
+            dropdown_fg_color=SURFACE, dropdown_text_color=TEXT,
+            dropdown_hover_color=BORDER,
+            command=self._on_lang_changed)
+        self.option_lang.set(current_display)
+        self.option_lang.grid(row=1, column=1, padx=(0, 14), pady=(10, 5), sticky="w")
+
+        self.lbl_lang_notice = ctk.CTkLabel(
+            self.frm_lang, text="",
+            font=ctk.CTkFont(size=11), text_color=MUTED)
+        self.lbl_lang_notice.grid(row=2, column=0, columnspan=2,
+                                  padx=14, pady=(0, 12))
 
     # ── Scroll molette ───────────────────────────────────────────────────────
 
@@ -227,11 +262,9 @@ class TabSettings(ctk.CTkFrame):
                       for k, e in self.entries.items() if e.get().strip()}
         success = self.on_save_callback(new_config)
         if success:
-            self.lbl_status.configure(
-                text="Configuration sauvegardée !", text_color=GREEN)
+            self.lbl_status.configure(text=t("settings.saved_ok"), text_color=GREEN)
         else:
-            self.lbl_status.configure(
-                text="Veuillez d'abord initialiser le serveur.", text_color=RED)
+            self.lbl_status.configure(text=t("settings.save_error"), text_color=RED)
         self.after(3000, lambda: self.lbl_status.configure(text=""))
 
     def _on_save_perf_clicked(self):
@@ -241,18 +274,30 @@ class TabSettings(ctk.CTkFrame):
         success = self.on_save_perf_callback(ram_mb, aikar)
         if success:
             self.lbl_perf_status.configure(
-                text="Performances sauvegardées !", text_color=GREEN)
+                text=t("settings.perf_saved_ok"), text_color=GREEN)
         else:
             self.lbl_perf_status.configure(
-                text="Erreur lors de la sauvegarde.", text_color=RED)
+                text=t("settings.perf_save_error"), text_color=RED)
         self.after(3000, lambda: self.lbl_perf_status.configure(text=""))
 
     def _on_scheduler_toggled(self):
         if self.switch_scheduler.get() == 1:
             if self.on_start_scheduler:
-                msg = self.entry_scheduler_msg.get().strip() or "Bienvenue sur le serveur !"
+                msg = self.entry_scheduler_msg.get().strip() or t("settings.scheduler_msg_placeholder")
                 interval = int(self.option_scheduler_interval.get().split()[0])
                 self.on_start_scheduler(msg, interval)
         else:
             if self.on_stop_scheduler:
                 self.on_stop_scheduler()
+
+    def _on_lang_changed(self, display_value):
+        lang = self._lang_map.get(display_value, "fr")
+        i18n.set_lang(lang)
+        if self.on_save_lang_callback:
+            self.on_save_lang_callback(lang)
+        # Message bilingue — la langue vient juste de changer
+        notice_fr = "Redémarrez l'application pour appliquer."
+        notice_en = "Restart the application to apply."
+        self.lbl_lang_notice.configure(
+            text=notice_en if lang == "en" else notice_fr,
+            text_color=MUTED)

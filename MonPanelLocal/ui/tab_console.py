@@ -1,5 +1,6 @@
 import customtkinter as ctk
 from .widgets.scrollable_dropdown import ScrollableDropdown
+from core.i18n import t
 
 BG       = "#0f172a"
 SURFACE  = "#1e293b"
@@ -47,7 +48,7 @@ class TabConsole(ctk.CTkFrame):
         self.frame_controls.grid_columnconfigure(7, weight=1)  # spacer
 
         # col 0 : label Type
-        ctk.CTkLabel(self.frame_controls, text="Type", text_color=SUB,
+        ctk.CTkLabel(self.frame_controls, text=t("console.type"), text_color=SUB,
                      font=ctk.CTkFont(size=11)
                      ).grid(row=0, column=0, padx=(12, 4), pady=0)
 
@@ -67,14 +68,14 @@ class TabConsole(ctk.CTkFrame):
                      ).grid(row=0, column=2, padx=4, pady=4, sticky="ns")
 
         # col 3 : label Version
-        ctk.CTkLabel(self.frame_controls, text="Version", text_color=SUB,
+        ctk.CTkLabel(self.frame_controls, text=t("console.version"), text_color=SUB,
                      font=ctk.CTkFont(size=11)
                      ).grid(row=0, column=3, padx=(4, 4), pady=0)
 
         # col 4 : option_version
         self.option_version = ScrollableDropdown(
             self.frame_controls,
-            values=["Chargement..."],
+            values=[t("console.loading")],
             width=116, height=28,
             fg_color=BG, text_color=TEXT,
             hover_color=SURFACE,
@@ -83,7 +84,7 @@ class TabConsole(ctk.CTkFrame):
 
         # col 5 : btn_install / btn_start (alternent sur la même cellule)
         self.btn_install = ctk.CTkButton(
-            self.frame_controls, text="↓  Installer", width=110,
+            self.frame_controls, text=f"↓  {t('console.install')}", width=110,
             fg_color=SURFACE, hover_color=BG,
             border_color=BORDER, border_width=1,
             text_color=SUB, height=28,
@@ -91,7 +92,7 @@ class TabConsole(ctk.CTkFrame):
         self.btn_install.grid(row=0, column=5, padx=(6, 4), pady=0)
 
         self.btn_start = ctk.CTkButton(
-            self.frame_controls, text="▶  Démarrer", width=120,
+            self.frame_controls, text=f"▶  {t('console.start')}", width=120,
             fg_color=ACCENT, hover_color=ACCENT2,
             text_color=TEXT, height=28,
             command=self._on_start_clicked)
@@ -100,7 +101,7 @@ class TabConsole(ctk.CTkFrame):
 
         # col 6 : btn_stop
         self.btn_stop = ctk.CTkButton(
-            self.frame_controls, text="■  Arrêter", width=110,
+            self.frame_controls, text=f"■  {t('console.stop')}", width=110,
             fg_color=RED_TINT, hover_color="#5a2020",
             text_color=RED, border_color=RED_BORDER,
             border_width=1, height=28, state="disabled",
@@ -114,7 +115,7 @@ class TabConsole(ctk.CTkFrame):
                                        fg_color=RED_TINT, corner_radius=12)
         self.pill_state.grid(row=0, column=8, padx=(4, 6), pady=0)
         self.lbl_state = ctk.CTkLabel(
-            self.pill_state, text="● Éteint",
+            self.pill_state, text=f"● {t('console.offline')}",
             font=ctk.CTkFont(size=11, weight="bold"), text_color=RED)
         self.lbl_state.pack(padx=10, pady=0)
 
@@ -128,7 +129,7 @@ class TabConsole(ctk.CTkFrame):
 
         # col 10 : btn_bore
         self.btn_bore = ctk.CTkButton(
-            self.frame_controls, text="Public", width=90,
+            self.frame_controls, text=t("console.public"), width=90,
             fg_color=BLUE_TINT, hover_color=SURFACE,
             text_color=BLUE, border_color=BLUE_BORDER,
             border_width=1, height=28,
@@ -140,7 +141,7 @@ class TabConsole(ctk.CTkFrame):
         hdr_console.pack(side="top", fill="x", padx=12, pady=(2, 0))
         ctk.CTkLabel(hdr_console, text="◉", font=ctk.CTkFont(size=11),
                      text_color=GREEN).pack(side="left", padx=(0, 6))
-        ctk.CTkLabel(hdr_console, text="CONSOLE EN DIRECT",
+        ctk.CTkLabel(hdr_console, text=t("console.live_header").upper(),
                      font=ctk.CTkFont(size=10, weight="bold"),
                      text_color=MUTED).pack(side="left")
 
@@ -169,7 +170,7 @@ class TabConsole(ctk.CTkFrame):
 
         self.entry_cmd = ctk.CTkEntry(
             self.frame_input,
-            placeholder_text="Entrez une commande…",
+            placeholder_text=t("console.cmd_hint"),
             fg_color=BG, border_color=BORDER,
             text_color=TEXT, placeholder_text_color=MUTED,
             border_width=1)
@@ -179,7 +180,7 @@ class TabConsole(ctk.CTkFrame):
         self.entry_cmd.bind("<Down>",   self._on_history_down)
 
         self.btn_send = ctk.CTkButton(
-            self.frame_input, text="Envoyer", width=90,
+            self.frame_input, text=t("console.send"), width=90,
             fg_color=ACCENT, hover_color=ACCENT2,
             command=self._on_send_clicked, state="disabled")
         self.btn_send.grid(row=0, column=2, padx=(0, 8), pady=8)
@@ -209,8 +210,8 @@ class TabConsole(ctk.CTkFrame):
             self.option_version.set(versions[0])
             self.on_version_change(versions[0])
         else:
-            self.option_version.configure(values=["Erreur API"])
-            self.option_version.set("Erreur API")
+            self.option_version.configure(values=[t("console.api_error")])
+            self.option_version.set(t("console.api_error"))
             self.btn_install.configure(state="disabled")
 
     def set_loading_state(self, loading: bool):
@@ -218,8 +219,8 @@ class TabConsole(ctk.CTkFrame):
         self.option_type.configure(state=state)
         self.option_version.configure(state=state)
         if loading:
-            self.option_version.configure(values=["Chargement..."])
-            self.option_version.set("Chargement...")
+            self.option_version.configure(values=[t("console.loading")])
+            self.option_version.set(t("console.loading"))
 
     def update_install_state(self, is_installed):
         if is_installed:
@@ -263,19 +264,19 @@ class TabConsole(ctk.CTkFrame):
             self.btn_stop.configure(state="normal")
             self.btn_send.configure(state="normal")
             self.pill_state.configure(fg_color=GREEN_TINT)
-            self.lbl_state.configure(text="● En ligne", text_color=GREEN)
+            self.lbl_state.configure(text=f"● {t('console.online')}", text_color=GREEN)
         else:
             self.option_version.configure(state="normal")
             self.btn_start.configure(state="normal")
             self.btn_stop.configure(state="disabled")
             self.btn_send.configure(state="disabled")
             self.pill_state.configure(fg_color=RED_TINT)
-            self.lbl_state.configure(text="● Éteint", text_color=RED)
+            self.lbl_state.configure(text=f"● {t('console.offline')}", text_color=RED)
 
     def set_bore_state(self, is_running, ip=""):
         if is_running:
             self.btn_bore.configure(
-                text="×  Tunnel actif",
+                text=f"×  {t('console.tunnel_active')}",
                 fg_color=RED_TINT, hover_color="#5a2020",
                 text_color=RED, border_color=RED_BORDER)
             if ip:
@@ -286,7 +287,7 @@ class TabConsole(ctk.CTkFrame):
                 self.entry_bore_ip.grid(row=0, column=9, padx=4, pady=8)
         else:
             self.btn_bore.configure(
-                text="🌐  Public", fg_color=BLUE_TINT,
+                text=f"🌐  {t('console.public')}", fg_color=BLUE_TINT,
                 hover_color=SURFACE, text_color=BLUE,
                 border_color=BLUE_BORDER)
             self.entry_bore_ip.grid_remove()
