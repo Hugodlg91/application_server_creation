@@ -4,7 +4,20 @@ Ce document retrace l'historique de développement, les fonctionnalités ajouté
 
 ---
 
-## 🎨 Version 6.2 - Améliorations de Confort (Actuelle)
+## 🖱️ Version 6.3 - Scroll Molette Universel (Actuelle)
+**Date :** 04 Mars 2026
+**Objectif :** Rendre le scroll à la molette fonctionnel sur tous les onglets contenant une zone défilante, sur Linux (et Windows/macOS).
+
+**Modifications Apportées :**
+- **Refactorisation du scroll dans `ui/tab_settings.py`** : Remplacement du hack `tk.Canvas` + `CTkFrame(canvas)` (incompatible Linux, causait un segfault) par un `CTkScrollableFrame` natif monté en `grid` avec `sticky="nsew"`. Suppression de `import tkinter as tk`, de `self._canvas`, `self._scrollbar` et de tous les bindings directs sur le canvas.
+- **Propagation molette dans `ui/tab_settings.py`** : Ajout de `_bind_mousewheel(widget)` (récursif sur tous les enfants) et `_on_mousewheel(event)` qui redirige vers `scroll_container._parent_canvas.yview_scroll`. Appelé via `after(200)` à la fin de `__init__`.
+- **Propagation molette dans `ui/tab_players.py`** : Même pattern `_bind_mousewheel` / `_on_mousewheel` appliqué sur `self.scroll_frame`. Re-binding systématique à la fin de `update_player_list()` pour couvrir les widgets créés dynamiquement.
+- **Propagation molette dans `ui/tab_plugins.py`** : Même pattern appliqué sur `self.scroll_results`. Re-binding à la fin de `display_results()` pour couvrir les cartes de résultats créées dynamiquement.
+- **Note technique** : Les bindings `<Button-4>`/`<Button-5>` (Linux) et `<MouseWheel>` (Windows/macOS) sont appliqués récursivement car Tkinter ne propage pas ces événements vers les widgets parents.
+
+---
+
+## 🎨 Version 6.2 - Améliorations de Confort
 **Date :** 04 Mars 2026
 **Objectif :** Améliorer l'ergonomie de l'interface sans créer de nouveaux fichiers : historique de commandes, console colorée et planificateur de messages automatiques.
 

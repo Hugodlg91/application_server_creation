@@ -113,6 +113,27 @@ class TabSettings(ctk.CTkFrame):
         else:
             self.switch_aikar.deselect()
 
+        self.after(200, lambda: self._bind_mousewheel(self.scroll_container))
+
+    def _bind_mousewheel(self, widget):
+        """Propage la molette souris à tous les widgets enfants récursivement."""
+        widget.bind("<MouseWheel>", self._on_mousewheel)        # Windows/macOS
+        widget.bind("<Button-4>",   self._on_mousewheel)        # Linux scroll up
+        widget.bind("<Button-5>",   self._on_mousewheel)        # Linux scroll down
+        for child in widget.winfo_children():
+            self._bind_mousewheel(child)
+
+    def _on_mousewheel(self, event):
+        """Redirige l'événement molette vers le CTkScrollableFrame."""
+        if event.num == 4:          # Linux scroll up
+            self.scroll_container._parent_canvas.yview_scroll(-1, "units")
+        elif event.num == 5:        # Linux scroll down
+            self.scroll_container._parent_canvas.yview_scroll(1, "units")
+        else:                       # Windows / macOS
+            self.scroll_container._parent_canvas.yview_scroll(
+                int(-1 * (event.delta / 120)), "units"
+            )
+
     def update_form(self, current_config):
         """Met à jour les champs du formulaire avec la nouvelle config."""
         for key, entry in self.entries.items():

@@ -27,6 +27,23 @@ class TabPlayers(ctk.CTkFrame):
         self.scroll_frame.grid(row=2, column=0, padx=10, pady=(0, 10), sticky="nsew")
         self.scroll_frame.grid_columnconfigure(0, weight=1)
 
+        self.after(200, lambda: self._bind_mousewheel(self.scroll_frame))
+
+    def _bind_mousewheel(self, widget):
+        widget.bind("<MouseWheel>", self._on_mousewheel)
+        widget.bind("<Button-4>",   self._on_mousewheel)
+        widget.bind("<Button-5>",   self._on_mousewheel)
+        for child in widget.winfo_children():
+            self._bind_mousewheel(child)
+
+    def _on_mousewheel(self, event):
+        if event.num == 4:
+            self.scroll_frame._parent_canvas.yview_scroll(-1, "units")
+        elif event.num == 5:
+            self.scroll_frame._parent_canvas.yview_scroll(1, "units")
+        else:
+            self.scroll_frame._parent_canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+
     def _on_refresh_clicked(self):
         """Demande au serveur de lister les joueurs, ce qui mettra à jour l'UI via le log parser."""
         self.send_command_callback("list")
@@ -67,3 +84,5 @@ class TabPlayers(ctk.CTkFrame):
                 command=lambda p=player: self.send_command_callback(f"ban {p}")
             )
             btn_ban.grid(row=0, column=3, padx=5, pady=5)
+
+        self._bind_mousewheel(self.scroll_frame)

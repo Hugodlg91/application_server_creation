@@ -31,7 +31,24 @@ class TabPlugins(ctk.CTkFrame):
         # --- Barre de progression (Cachée par défaut) ---
         self.progress_bar = ctk.CTkProgressBar(self)
         self.progress_bar.set(0)
-        
+
+        self.after(200, lambda: self._bind_mousewheel(self.scroll_results))
+
+    def _bind_mousewheel(self, widget):
+        widget.bind("<MouseWheel>", self._on_mousewheel)
+        widget.bind("<Button-4>",   self._on_mousewheel)
+        widget.bind("<Button-5>",   self._on_mousewheel)
+        for child in widget.winfo_children():
+            self._bind_mousewheel(child)
+
+    def _on_mousewheel(self, event):
+        if event.num == 4:
+            self.scroll_results._parent_canvas.yview_scroll(-1, "units")
+        elif event.num == 5:
+            self.scroll_results._parent_canvas.yview_scroll(1, "units")
+        else:
+            self.scroll_results._parent_canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+
     def _on_search_click(self):
         query = self.entry_search.get().strip()
         if query:
@@ -79,7 +96,9 @@ class TabPlugins(ctk.CTkFrame):
                 command=lambda pid=project_id: self._on_install_click(pid)
             )
             btn_install.grid(row=0, column=1, rowspan=2, padx=10, pady=10)
-            
+
+        self._bind_mousewheel(self.scroll_results)
+
     def _on_install_click(self, project_id):
         self.on_install_callback(project_id)
         
