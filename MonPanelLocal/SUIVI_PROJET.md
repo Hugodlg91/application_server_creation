@@ -4,7 +4,41 @@ Ce document retrace l'historique de développement, les fonctionnalités ajouté
 
 ---
 
-## 🌐 Version 5.1 - Tunneling Local "Plug & Play" avec Playit.gg (Actuelle)
+## 🎨 Version 6.2 - Améliorations de Confort (Actuelle)
+**Date :** 04 Mars 2026
+**Objectif :** Améliorer l'ergonomie de l'interface sans créer de nouveaux fichiers : historique de commandes, console colorée et planificateur de messages automatiques.
+
+**Modifications Apportées :**
+- **Historique des commandes** (`ui/tab_console.py`) : Les commandes envoyées sont mémorisées (50 max). Navigation avec les flèches ↑/↓ sur le champ de saisie, retour à ligne vide avec la flèche bas en bas de l'historique.
+- **Console colorée** (`ui/tab_console.py`) : Les lignes de log sont colorisées via les tags natifs du widget `Text` interne (`_textbox`). Rouge pour les erreurs (`ERROR`, `[Erreur]`), jaune pour les avertissements (`WARN`/`WARNING`), bleu clair pour les messages système (`[Système]`, `[Bore]`, `[Java]`), gris clair pour les logs standards.
+- **Planificateur Auto-Broadcast** (`core/server_manager.py` + `ui/tab_settings.py` + `ui/main_window.py`) : Nouveau `start_scheduler(message, interval_minutes)` dans `ServerManager` — thread daemon avec `time.sleep` qui envoie `say {message}` périodiquement si le serveur tourne. Arrêt via `stop_scheduler()`. Section UI dédiée `📢 Planificateur de Messages` dans l'onglet Paramètres : champ de message, menu d'intervalle (5/10/15/30/60 min), switch d'activation.
+
+---
+
+## ⚙️ Version 6.1 - Éditeur de Performances
+**Date :** 04 Mars 2026
+**Objectif :** Permettre à l'utilisateur de contrôler la RAM allouée au serveur et d'activer les optimisations Aikar Flags directement depuis l'interface, sans redémarrer l'application.
+
+**Modifications Apportées :**
+- **Nouveau système de persistance** (`core/config_manager.py` + `panel_config.json`) : Ajout de `load_performance_config()` et `save_performance_config(ram_mb, aikar_flags)`. La config est stockée dans `panel_config.json` à la racine de `MonPanelLocal/`. La lecture/écriture fusionne proprement avec les clés existantes (ex : token ngrok) sans les écraser.
+- **Démarrage dynamique du serveur** (`core/server_manager.py`) : La signature de `start_server()` accepte désormais `aikar_flags=False`. En mode Aikar, 15 flags JVM G1GC optimisés remplacent les simples `-Xms`/`-Xmx`. Un message de log indique la configuration utilisée au démarrage : `[Système] Démarrage avec X Mo RAM | Aikar Flags : Activés/Désactivés`.
+- **Section UI "Performances"** (`ui/tab_settings.py`) : Ajout d'un bloc visuel séparé `⚙️ Performances du Serveur` dans l'onglet Paramètres, contenant un `CTkOptionMenu` pour la RAM (512/1024/2048/4096/6144/8192 Mo), un `CTkSwitch` pour les Aikar Flags avec description en gris, un bouton de sauvegarde et un message de confirmation vert/rouge. Les valeurs sont pré-remplies depuis `panel_config.json` au chargement.
+- **Câblage des dépendances** (`ui/main_window.py`) : Injection des callbacks `load_performance_config` et `save_performance_config` dans `TabSettings`. `_action_start` lit la config perf avant chaque démarrage du serveur.
+
+---
+
+## 🌐 Version 6.0 - Tunneling avec Bore
+**Date :** 04 Mars 2026
+**Objectif :** Rendre le serveur Minecraft accessible depuis Internet sans configuration de routeur locale (Plug & Play).
+
+**Modifications Apportées :**
+- **Nouveau Backend Automatisé** (`core/bore_manager.py`) : Téléchargement automatique de la dernière release de Bore en Rust depuis l'API GitHub, avec compatibilité multiplateforme Windows/Mac/Linux (x86 et arm). L'exécutable est enregistré dans `runtimes/bore/`.
+- **Lancement et Parsing IP** : Lancement asynchrone du tunnel vers `bore.pub`. Interception automatique du port distant alloué dynamiquement par expressions régulières (`re`).
+- **Interface Utilisateur Simplifiée** (`ui/tab_console.py` & `ui/main_window.py`) : Remplacement de l'outil précédent par un bouton unique "🌐 Rendre Public (Bore)" avec affichage immédiat en lecture seule de l'IP publique à communiquer aux joueurs.
+
+---
+
+## 🌐 Version 5.1 - Tunneling Local "Plug & Play" avec Playit.gg
 **Date :** 02 Mars 2026
 **Objectif :** Remplacer ngrok (limité par les règles d'authentification) par Playit.gg afin de rendre le serveur Minecraft accessible publiquement de manière totalement "Plug & Play", sans aucune configuration de compte requise.
 

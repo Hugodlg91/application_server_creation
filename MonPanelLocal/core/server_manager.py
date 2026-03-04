@@ -2,6 +2,7 @@ import os
 import subprocess
 import threading
 import re
+import time
 from .java_manager import JavaManager
 
 class ServerManager:
@@ -24,6 +25,9 @@ class ServerManager:
         
         self.on_log_received = on_log_received
         self.on_status_changed = on_status_changed
+
+        self.scheduler_active = False
+        self.scheduler_thread = None
 
     def set_version(self, version):
         """Met à jour les chemins cibles selon la version de minecraft sélectionnée."""
@@ -60,7 +64,7 @@ class ServerManager:
             except Exception as e:
                 self._notify_log(f"[Erreur] Impossible de créer eula.txt: {e}")
 
-    def start_server(self, memory_mb=1024):
+    def start_server(self, memory_mb=1024, aikar_flags=False):
         if self.is_running:
             self._notify_log("[Système] Le serveur est déjà en cours d'exécution.")
             return
@@ -92,8 +96,26 @@ class ServerManager:
 
             # 2. Démarrage du subprocess
             try:
+                if aikar_flags:
+                    java_args = [
+                        f"-Xms{memory_mb}M", f"-Xmx{memory_mb}M",
+                        "-XX:+UseG1GC", "-XX:+ParallelRefProcEnabled",
+                        "-XX:MaxGCPauseMillis=200", "-XX:+UnlockExperimentalVMOptions",
+                        "-XX:+DisableExplicitGC", "-XX:+AlwaysPreTouch",
+                        "-XX:G1HeapWastePercent=5", "-XX:G1MixedGCCountTarget=4",
+                        "-XX:G1MixedGCLiveThresholdPercent=90",
+                        "-XX:G1RSetUpdatingPauseTimePercent=5",
+                        "-XX:SurvivorRatio=32", "-XX:+PerfDisableSharedMem",
+                        "-XX:MaxTenuringThreshold=1"
+                    ]
+                else:
+                    java_args = [f"-Xms{memory_mb}M", f"-Xmx{memory_mb}M"]
+
+                aikar_label = "Activés" if aikar_flags else "Désactivés"
+                self._notify_log(f"[Système] Démarrage avec {memory_mb} Mo RAM | Aikar Flags : {aikar_label}")
+
                 self.process = subprocess.Popen(
-                    [java_exe, f"-Xms{memory_mb}M", f"-Xmx{memory_mb}M", "-jar", self.jar_path, "nogui"],
+                    [java_exe] + java_args + ["-jar", self.jar_path, "nogui"],
                     cwd=self.server_dir,
                     stdin=subprocess.PIPE,
                     stdout=subprocess.PIPE,
@@ -188,3 +210,21 @@ class ServerManager:
             self.send_command("stop")
         else:
             self._notify_log("[Système] Le serveur n'est pas en marche.")
+
+    def start_scheduler(self, message, interval_minutes):
+        """Lance un thread qui envoie périodiquement un message 'say' au serveur."""
+        self.stop_scheduler()
+        self.scheduler_active = True
+
+        def _loop():
+            while self.scheduler_active:
+                time.sleep(interval_minutes * 60)
+                if self.scheduler_active and self.is_running:
+                    self.send_command(f"say {message}")
+
+        self.scheduler_thread = threading.Thread(target=_loop, daemon=True)
+        self.scheduler_thread.start()
+
+    def stop_scheduler(self):
+        """Arrête le planificateur de messages."""
+        self.scheduler_active = False

@@ -7,7 +7,7 @@ from .widget_monitor import WidgetMonitor
 from .tab_plugins import TabPlugins
 
 class MainWindow(ctk.CTk):
-    def __init__(self, server_manager, config_manager, downloader, system_monitor, plugin_manager, playit_manager):
+    def __init__(self, server_manager, config_manager, downloader, system_monitor, plugin_manager, bore_manager):
         super().__init__()
         
         self.server_manager = server_manager
@@ -15,9 +15,7 @@ class MainWindow(ctk.CTk):
         self.downloader = downloader
         self.system_monitor = system_monitor
         self.plugin_manager = plugin_manager
-        self.playit_manager = playit_manager
-        self.current_version = None
-        self.playit_active = False
+        self.bore_manager = bore_manager
         
         self.title("MonPanelLocal - Minecraft Server Dashboard")
         self.geometry("850x600")
@@ -43,7 +41,7 @@ class MainWindow(ctk.CTk):
             on_send_command=self._action_send_command,
             on_download=self._action_download,
             on_version_change=self._action_version_change,
-            on_playit_toggle=self._action_toggle_playit
+            on_bore_toggle=self._action_toggle_bore
         )
         self.tab_console.pack(fill="both", expand=True)
         
@@ -57,7 +55,11 @@ class MainWindow(ctk.CTk):
         # === Onglet Paramètres ===
         self.tab_settings = TabSettings(
             self.tabview.tab("Paramètres"),
-            on_save_callback=self.config_manager.save_config
+            on_save_callback=self.config_manager.save_config,
+            on_load_perf_callback=self.config_manager.load_performance_config,
+            on_save_perf_callback=self.config_manager.save_performance_config,
+            on_start_scheduler=lambda msg, interval: self.server_manager.start_scheduler(msg, interval),
+            on_stop_scheduler=lambda: self.server_manager.stop_scheduler()
         )
         self.tab_settings.pack(fill="both", expand=True)
         
@@ -114,7 +116,8 @@ class MainWindow(ctk.CTk):
         self.tab_console.set_running_state(is_running)
         
     def _action_start(self):
-        self.server_manager.start_server(memory_mb=1024)
+        perf = self.config_manager.load_performance_config()
+        self.server_manager.start_server(memory_mb=perf["ram_mb"], aikar_flags=perf["aikar_flags"])
         
     def _action_stop(self):
         self.server_manager.stop_server()
@@ -188,43 +191,47 @@ class MainWindow(ctk.CTk):
             finish_callback=on_finish
         )
 
-    def _action_toggle_playit(self):
-        if self.playit_active:
-            self.tab_console.btn_playit.configure(state="disabled")
-            self.playit_manager.stop()
-            self.playit_active = False
-            self.tab_console.set_playit_state(False)
-            self.tab_console.btn_playit.configure(state="normal")
-            self.tab_console.append_log("[Système] Playit.gg arrêté.")
+    def _action_toggle_bore(self):
+        if self.bore_manager.is_running:
+            self.tab_console.btn_bore.configure(state="disabled")
+            self.bore_manager.stop()
+            self.tab_console.set_bore_state(False)
+            self.tab_console.btn_bore.configure(state="normal")
+            self.tab_console.append_log("[Système] Tunnel Bore arrêté.")
         else:
-            self.tab_console.btn_playit.configure(state="disabled")
+            self.tab_console.btn_bore.configure(state="disabled")
             
-            def check_download_progress(pct):
-                pass # You can link it to a progress bar if desired
-                
             def start_process():
-                if not self.playit_manager.ensure_downloaded(progress_callback=check_download_progress):
-                    self.after(0, lambda: self.tab_console.btn_playit.configure(state="normal"))
-                    self.after(0, self.tab_console.append_log, "[Erreur] Impossible de télécharger ou trouver l'exécutable playit.")
+                def on_log_prep(msg):
+                    self.after(0, self.tab_console.append_log, msg)
+                
+                if not self.bore_manager.ensure_downloaded(on_log=on_log_prep):
+                    self.after(0, lambda: self.tab_console.btn_bore.configure(state="normal"))
+                    self.after(0, self.tab_console.append_log, "[Erreur] Impossible de préparer l'exécutable Bore.")
                     return
                     
-                self.playit_active = True
-                self.after(0, lambda: self.tab_console.set_playit_state(True))
-                self.after(0, lambda: self.tab_console.btn_playit.configure(state="normal"))
-                self.after(0, self.tab_console.append_log, "[Système] Démarrage de Playit.gg...")
+                self.after(0, lambda: self.tab_console.set_bore_state(True))
+                self.after(0, lambda: self.tab_console.btn_bore.configure(state="normal"))
+                self.after(0, self.tab_console.append_log, "[Système] Démarrage de Bore sur le port 25565...")
+                
+                # Reading port from properties if possible
+                port = 25565
+                try:
+                    props = self.config_manager.read_properties()
+                    if "server-port" in props:
+                        port = int(props["server-port"])
+                except Exception:
+                    pass
                 
                 def on_log(msg):
                     self.after(0, self.tab_console.append_log, msg)
                     
-                def on_claim(url):
-                    self.after(0, lambda: self.tab_console.show_playit_info(claim_link=url))
-                    self.after(0, self.tab_console.append_log, f"[Playit] Lien de réclamation généré: {url}")
-                    
                 def on_ip(ip):
-                    self.after(0, lambda: self.tab_console.show_playit_info(ip=ip))
-                    self.after(0, self.tab_console.append_log, f"[Playit] IP publique allouée: {ip}")
+                    if ip:
+                        self.after(0, lambda: self.tab_console.set_bore_state(True, ip))
+                        self.after(0, self.tab_console.append_log, f"[Bore] IP publique allouée: {ip}")
                     
-                self.playit_manager.start(on_log, on_claim, on_ip)
+                self.bore_manager.start(port, on_log, on_ip)
                 
             import threading
             threading.Thread(target=start_process, daemon=True).start()

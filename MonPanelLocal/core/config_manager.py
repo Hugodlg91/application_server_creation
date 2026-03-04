@@ -1,4 +1,5 @@
 import os
+import json
 
 class ConfigManager:
     """
@@ -78,5 +79,37 @@ class ConfigManager:
                 f.writelines(new_lines)
             return True
             
+        except Exception:
+            return False
+
+    def load_performance_config(self):
+        """Retourne la config de performances depuis panel_config.json."""
+        path = os.path.join(self.base_dir, "panel_config.json")
+        defaults = {"ram_mb": 1024, "aikar_flags": False}
+        if not os.path.exists(path):
+            return defaults
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            return {"ram_mb": data.get("ram_mb", 1024), "aikar_flags": data.get("aikar_flags", False)}
+        except Exception:
+            return defaults
+
+    def save_performance_config(self, ram_mb, aikar_flags):
+        """Sauvegarde la config de performances sans écraser les autres clés de panel_config.json."""
+        path = os.path.join(self.base_dir, "panel_config.json")
+        data = {}
+        if os.path.exists(path):
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+            except Exception:
+                pass
+        data["ram_mb"] = ram_mb
+        data["aikar_flags"] = aikar_flags
+        try:
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2)
+            return True
         except Exception:
             return False
