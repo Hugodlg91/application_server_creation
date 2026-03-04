@@ -131,6 +131,16 @@ class TabSettings(ctk.CTkFrame):
         else:
             self.switch_aikar.deselect()
 
+        # Propager le scroll souris à tous les widgets enfants (Linux)
+        self.after(0, lambda: self._bind_scroll_recursive(self.scroll_container))
+
+    def _bind_scroll_recursive(self, widget):
+        """Propage les événements de scroll souris à tous les widgets enfants."""
+        widget.bind("<Button-4>", lambda e: self._canvas.yview_scroll(-1, "units"))
+        widget.bind("<Button-5>", lambda e: self._canvas.yview_scroll(1, "units"))
+        for child in widget.winfo_children():
+            self._bind_scroll_recursive(child)
+
     def update_form(self, current_config):
         """Met à jour les champs du formulaire avec la nouvelle config."""
         for key, entry in self.entries.items():
