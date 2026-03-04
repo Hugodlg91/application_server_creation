@@ -89,16 +89,13 @@ class TabPlayers(ctk.CTkFrame):
         frame = ctk.CTkFrame(self.scroll_frame, fg_color="transparent")
         frame.grid(row=0, column=0, pady=60, sticky="ew")
         frame.grid_columnconfigure(0, weight=1)
-        ctk.CTkLabel(frame, text="👥",
-                     font=ctk.CTkFont(size=48)
-                     ).grid(row=0, column=0, pady=(0, 8))
         ctk.CTkLabel(frame, text="Serveur vide",
                      font=ctk.CTkFont(size=16, weight="bold"),
                      text_color=TEXT
-                     ).grid(row=1, column=0)
+                     ).grid(row=0, column=0)
         ctk.CTkLabel(frame, text="Aucun joueur connecté pour le moment.",
                      font=ctk.CTkFont(size=12), text_color=MUTED
-                     ).grid(row=2, column=0, pady=(4, 0))
+                     ).grid(row=1, column=0, pady=(4, 0))
 
     # ── Scroll molette ────────────────────────────────────────────────────────
 

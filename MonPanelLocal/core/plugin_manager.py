@@ -25,7 +25,8 @@ class PluginManager:
                     results.append({
                         "title": hit.get("title", "Unknown"),
                         "description": hit.get("description", ""),
-                        "project_id": hit.get("project_id")
+                        "project_id": hit.get("project_id"),
+                        "downloads": hit.get("downloads", 0),
                     })
                 
                 if callback_success:

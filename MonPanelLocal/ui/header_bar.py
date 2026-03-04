@@ -43,17 +43,17 @@ class HeaderBar(ctk.CTkFrame):
                             corner_radius=8)
         logo.pack(side="left", padx=(0, 10))
         logo.pack_propagate(False)
-        ctk.CTkLabel(logo, text="⛏", font=("Arial", 15), text_color="white"
+        ctk.CTkLabel(logo, text="MC", font=ctk.CTkFont(size=11, weight="bold"), text_color="white"
                      ).place(relx=0.5, rely=0.5, anchor="center")
 
         # Titre
         frame_title = ctk.CTkFrame(frame_left, fg_color="transparent")
         frame_title.pack(side="left", padx=(0, 14))
         ctk.CTkLabel(frame_title, text="MonPanel",
-                     font=("Arial", 14, "bold"), text_color=TEXT
+                     font=ctk.CTkFont(size=14, weight="bold"), text_color=TEXT
                      ).pack(side="left")
         ctk.CTkLabel(frame_title, text=" LOCAL",
-                     font=("Arial", 11, "bold"), text_color=ACCENT
+                     font=ctk.CTkFont(size=11, weight="bold"), text_color=ACCENT
                      ).pack(side="left")
 
         # Pill serveur (● type · version)
@@ -61,16 +61,16 @@ class HeaderBar(ctk.CTkFrame):
                             border_width=1, corner_radius=8)
         pill.pack(side="left")
         self.lbl_type_dot = ctk.CTkLabel(
-            pill, text="●", font=("Arial", 10),
+            pill, text="●", font=ctk.CTkFont(size=10),
             text_color=TYPE_COLORS.get(server_type, SUB))
         self.lbl_type_dot.pack(side="left", padx=(10, 0), pady=6)
         self.lbl_server_type = ctk.CTkLabel(
-            pill, text=server_type, font=("Arial", 11), text_color=SUB)
+            pill, text=server_type, font=ctk.CTkFont(size=11), text_color=SUB)
         self.lbl_server_type.pack(side="left", padx=(4, 4), pady=6)
-        ctk.CTkLabel(pill, text="·", font=("Arial", 11), text_color=BORDER
+        ctk.CTkLabel(pill, text="·", font=ctk.CTkFont(size=11), text_color=BORDER
                      ).pack(side="left", padx=2)
         self.lbl_version = ctk.CTkLabel(
-            pill, text=version, font=("Arial", 11, "bold"), text_color=TEXT)
+            pill, text=version, font=ctk.CTkFont(size=11, weight="bold"), text_color=TEXT)
         self.lbl_version.pack(side="left", padx=(4, 10), pady=6)
 
         # ── Droite ──────────────────────────────────────────────────────────
@@ -83,7 +83,7 @@ class HeaderBar(ctk.CTkFrame):
         self.pill_status.pack(side="right", padx=(10, 0))
         self.lbl_status = ctk.CTkLabel(
             self.pill_status, text="● Éteint",
-            font=("Arial", 11, "bold"), text_color=TEXT)
+            font=ctk.CTkFont(size=11, weight="bold"), text_color=TEXT)
         self.lbl_status.pack(padx=14, pady=6)
 
         # RAM
@@ -91,10 +91,10 @@ class HeaderBar(ctk.CTkFrame):
         frame_ram.pack(side="right", padx=(8, 0))
         row_ram = ctk.CTkFrame(frame_ram, fg_color="transparent")
         row_ram.pack()
-        ctk.CTkLabel(row_ram, text="RAM", font=("Arial", 10), text_color=SUB
+        ctk.CTkLabel(row_ram, text="RAM", font=ctk.CTkFont(size=10), text_color=SUB
                      ).pack(side="left")
         self.lbl_ram = ctk.CTkLabel(row_ram, text="0%",
-                                    font=("Arial", 10, "bold"), text_color=TEXT)
+                                    font=ctk.CTkFont(size=10, weight="bold"), text_color=TEXT)
         self.lbl_ram.pack(side="right", padx=(8, 0))
         self.pb_ram = ctk.CTkProgressBar(frame_ram, width=80, height=5,
                                          corner_radius=2,
@@ -108,10 +108,10 @@ class HeaderBar(ctk.CTkFrame):
         frame_cpu.pack(side="right", padx=8)
         row_cpu = ctk.CTkFrame(frame_cpu, fg_color="transparent")
         row_cpu.pack()
-        ctk.CTkLabel(row_cpu, text="CPU", font=("Arial", 10), text_color=SUB
+        ctk.CTkLabel(row_cpu, text="CPU", font=ctk.CTkFont(size=10), text_color=SUB
                      ).pack(side="left")
         self.lbl_cpu = ctk.CTkLabel(row_cpu, text="0%",
-                                    font=("Arial", 10, "bold"), text_color=TEXT)
+                                    font=ctk.CTkFont(size=10, weight="bold"), text_color=TEXT)
         self.lbl_cpu.pack(side="right", padx=(8, 0))
         self.pb_cpu = ctk.CTkProgressBar(frame_cpu, width=80, height=5,
                                          corner_radius=2,

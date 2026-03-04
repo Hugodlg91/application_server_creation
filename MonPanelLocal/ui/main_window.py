@@ -155,7 +155,7 @@ class MainWindow(ctk.CTk):
         self.current_version = version
         server_type = getattr(self, "current_server_type", "PaperMC")
         self.server_manager.set_version(server_type, version)
-        self.config_manager.set_version(version)
+        self.config_manager.set_version(server_type, version)
         self.header_bar.set_server_info(server_type, version)
 
         is_inst = self.server_manager.is_installed()
@@ -300,7 +300,7 @@ class MainWindow(ctk.CTk):
 
                 port = 25565
                 try:
-                    props = self.config_manager.read_properties()
+                    props = self.config_manager.read_config()
                     if "server-port" in props:
                         port = int(props["server-port"])
                 except Exception:

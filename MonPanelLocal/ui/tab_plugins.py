@@ -29,11 +29,7 @@ class TabPlugins(ctk.CTkFrame):
                                          border_color=BORDER, border_width=1,
                                          corner_radius=8)
         self.frame_search.grid(row=0, column=0, padx=8, pady=8, sticky="ew")
-        self.frame_search.grid_columnconfigure(1, weight=1)
-
-        ctk.CTkLabel(self.frame_search, text="🔍",
-                     font=ctk.CTkFont(size=15)
-                     ).grid(row=0, column=0, padx=(14, 0), pady=10)
+        self.frame_search.grid_columnconfigure(0, weight=1)
 
         self.entry_search = ctk.CTkEntry(
             self.frame_search,
@@ -41,14 +37,14 @@ class TabPlugins(ctk.CTkFrame):
             fg_color=BG, border_color=BORDER,
             text_color=TEXT, placeholder_text_color=MUTED,
             height=36, border_width=0)
-        self.entry_search.grid(row=0, column=1, padx=(6, 6), pady=10, sticky="ew")
+        self.entry_search.grid(row=0, column=0, padx=(14, 6), pady=10, sticky="ew")
         self.entry_search.bind("<Return>", lambda e: self._on_search_click())
 
         self.btn_search = ctk.CTkButton(
             self.frame_search, text="Rechercher", width=120, height=36,
             fg_color=ACCENT, hover_color=ACCENT2,
             command=self._on_search_click)
-        self.btn_search.grid(row=0, column=2, padx=(0, 10), pady=10)
+        self.btn_search.grid(row=0, column=1, padx=(0, 10), pady=10)
 
         # === Résultats ===
         self.scroll_results = ctk.CTkScrollableFrame(
@@ -75,31 +71,25 @@ class TabPlugins(ctk.CTkFrame):
         frame = ctk.CTkFrame(self.scroll_results, fg_color="transparent")
         frame.grid(row=0, column=0, pady=60, sticky="ew")
         frame.grid_columnconfigure(0, weight=1)
-        ctk.CTkLabel(frame, text="🧩",
-                     font=ctk.CTkFont(size=48)
-                     ).grid(row=0, column=0, pady=(0, 10))
         ctk.CTkLabel(frame, text="Trouver des plugins",
                      font=ctk.CTkFont(size=16, weight="bold"), text_color=TEXT
-                     ).grid(row=1, column=0)
+                     ).grid(row=0, column=0)
         ctk.CTkLabel(frame,
                      text="Recherchez sur Modrinth pour découvrir et installer des plugins.",
                      font=ctk.CTkFont(size=12), text_color=MUTED
-                     ).grid(row=2, column=0, pady=(4, 0))
+                     ).grid(row=1, column=0, pady=(4, 0))
 
     def _show_no_results(self, query=""):
         frame = ctk.CTkFrame(self.scroll_results, fg_color="transparent")
         frame.grid(row=0, column=0, pady=60, sticky="ew")
         frame.grid_columnconfigure(0, weight=1)
-        ctk.CTkLabel(frame, text="🔍",
-                     font=ctk.CTkFont(size=40)
-                     ).grid(row=0, column=0, pady=(0, 10))
         ctk.CTkLabel(frame, text="Aucun résultat",
                      font=ctk.CTkFont(size=15, weight="bold"), text_color=TEXT
-                     ).grid(row=1, column=0)
+                     ).grid(row=0, column=0)
         hint = f"Aucun plugin trouvé pour « {query} »." if query else "Essayez avec d'autres mots-clés."
         ctk.CTkLabel(frame, text=hint,
                      font=ctk.CTkFont(size=12), text_color=MUTED
-                     ).grid(row=2, column=0, pady=(4, 0))
+                     ).grid(row=1, column=0, pady=(4, 0))
 
     # ── Scroll molette ────────────────────────────────────────────────────────
 
@@ -162,7 +152,8 @@ class TabPlugins(ctk.CTkFrame):
                                       width=44, height=44, corner_radius=10)
             icon_frame.grid(row=0, column=0, rowspan=2, padx=(12, 8), pady=12)
             icon_frame.grid_propagate(False)
-            ctk.CTkLabel(icon_frame, text="🧩", font=ctk.CTkFont(size=20)
+            ctk.CTkLabel(icon_frame, text=title[0].upper(),
+                         font=ctk.CTkFont(size=18, weight="bold"), text_color="white"
                          ).place(relx=0.5, rely=0.5, anchor="center")
 
             # Titre
@@ -179,14 +170,14 @@ class TabPlugins(ctk.CTkFrame):
                          anchor="w", justify="left", wraplength=380
                          ).pack(anchor="w")
             if downloads:
-                dl_str = f"⬇ {downloads:,}".replace(",", "\u202f")
+                dl_str = f"↓ {downloads:,}".replace(",", "\u202f")
                 ctk.CTkLabel(info_row, text=dl_str,
                              font=ctk.CTkFont(size=10), text_color=MUTED
                              ).pack(anchor="w", pady=(2, 0))
 
             # Bouton installer
             ctk.CTkButton(
-                card, text="⬇  Installer", width=110,
+                card, text="↓  Installer", width=110,
                 fg_color=ACCENT, hover_color=ACCENT2,
                 command=lambda pid=project_id: self._on_install_click(pid)
             ).grid(row=0, column=2, rowspan=2, padx=12, pady=12)

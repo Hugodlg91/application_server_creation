@@ -83,7 +83,7 @@ class TabSettings(ctk.CTkFrame):
         return card
 
     def _build_properties_section(self):
-        card = self._make_section_card("Paramètres du serveur", icon="⚙")
+        card = self._make_section_card("Paramètres du serveur")
 
         self.entries = {}
         properties = {
@@ -107,7 +107,7 @@ class TabSettings(ctk.CTkFrame):
         # Bouton + statut
         row_save = len(properties) + 1
         self.btn_save = ctk.CTkButton(
-            card, text="💾  Sauvegarder",
+            card, text="Sauvegarder",
             fg_color=ACCENT, hover_color=ACCENT2,
             command=self._on_save_clicked)
         self.btn_save.grid(row=row_save, column=0, columnspan=2,
@@ -118,7 +118,7 @@ class TabSettings(ctk.CTkFrame):
                              padx=14, pady=(0, 12))
 
     def _build_perf_section(self):
-        self.frm_perf = self._make_section_card("Performances du serveur", icon="🚀")
+        self.frm_perf = self._make_section_card("Performances du serveur")
         self.frm_perf.grid_columnconfigure(1, weight=1)
 
         ctk.CTkLabel(self.frm_perf, text="RAM allouée",
@@ -147,7 +147,7 @@ class TabSettings(ctk.CTkFrame):
                             padx=14, pady=(0, 6), sticky="w")
 
         self.btn_save_perf = ctk.CTkButton(
-            self.frm_perf, text="💾  Sauvegarder les performances",
+            self.frm_perf, text="Sauvegarder les performances",
             fg_color=ACCENT, hover_color=ACCENT2,
             command=self._on_save_perf_clicked)
         self.btn_save_perf.grid(row=4, column=0, columnspan=2,
@@ -159,7 +159,7 @@ class TabSettings(ctk.CTkFrame):
                                   padx=14, pady=(0, 12))
 
     def _build_scheduler_section(self):
-        self.frm_scheduler = self._make_section_card("Planificateur de messages", icon="📢")
+        self.frm_scheduler = self._make_section_card("Planificateur de messages")
         self.frm_scheduler.grid_columnconfigure(1, weight=1)
 
         ctk.CTkLabel(self.frm_scheduler, text="Message",

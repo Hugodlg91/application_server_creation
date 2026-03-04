@@ -37,14 +37,11 @@ class TabConsole(ctk.CTkFrame):
         self.history_index = -1
         self._tags_ready = False
 
-        self.grid_columnconfigure(0, weight=1)
-        self.grid_rowconfigure(3, weight=1)   # row 3 = console_box
-
-        # ── row 0 : Barre de contrôles (grid) ─────────────────────────────────
+        # ── Barre de contrôles (top) ──────────────────────────────────────────
         self.frame_controls = ctk.CTkFrame(self, fg_color=SURFACE,
                                            border_color=BORDER, border_width=1,
                                            corner_radius=10)
-        self.frame_controls.grid(row=0, column=0, padx=8, pady=(8, 4), sticky="ew")
+        self.frame_controls.pack(side="top", fill="x", padx=8, pady=(8, 4))
         self.frame_controls.grid_columnconfigure(7, weight=1)  # spacer
 
         # col 0 : label Type
@@ -84,7 +81,7 @@ class TabConsole(ctk.CTkFrame):
 
         # col 5 : btn_install / btn_start (alternent sur la même cellule)
         self.btn_install = ctk.CTkButton(
-            self.frame_controls, text="⬇  Installer", width=110,
+            self.frame_controls, text="↓  Installer", width=110,
             fg_color=SURFACE, hover_color=BG,
             border_color=BORDER, border_width=1,
             text_color=SUB, height=32,
@@ -129,44 +126,40 @@ class TabConsole(ctk.CTkFrame):
 
         # col 10 : btn_bore
         self.btn_bore = ctk.CTkButton(
-            self.frame_controls, text="🌐  Public", width=100,
+            self.frame_controls, text="Public", width=90,
             fg_color=BLUE_TINT, hover_color=SURFACE,
             text_color=BLUE, border_color=BLUE_BORDER,
             border_width=1, height=32,
             command=self._on_bore_clicked)
         self.btn_bore.grid(row=0, column=10, padx=(4, 10), pady=8)
 
-        # ── row 1 : Header console ────────────────────────────────────────────
+        # ── Header console ────────────────────────────────────────────────────
         hdr_console = ctk.CTkFrame(self, fg_color="transparent")
-        hdr_console.grid(row=1, column=0, padx=12, pady=(2, 0), sticky="ew")
+        hdr_console.pack(side="top", fill="x", padx=12, pady=(2, 0))
         ctk.CTkLabel(hdr_console, text="◉", font=ctk.CTkFont(size=11),
                      text_color=GREEN).pack(side="left", padx=(0, 6))
         ctk.CTkLabel(hdr_console, text="CONSOLE EN DIRECT",
                      font=ctk.CTkFont(size=10, weight="bold"),
                      text_color=MUTED).pack(side="left")
 
-        # ── row 2 : Barre de progression (cachée par défaut) ──────────────────
+        # ── Barre de progression (cachée par défaut) ──────────────────────────
         self.progress_bar = ctk.CTkProgressBar(
             self, height=4, corner_radius=0, border_width=0,
             progress_color=ACCENT, fg_color=BORDER)
         self.progress_bar.set(0)
-        self.progress_bar.grid(row=2, column=0, padx=0, pady=0, sticky="ew")
-        self.progress_bar.grid_remove()
 
-        # ── row 3 : Console textbox ───────────────────────────────────────────
+        # ── Console textbox ───────────────────────────────────────────────────
         self.console_box = ctk.CTkTextbox(
             self, state="disabled",
             font=("Consolas", 12),
             fg_color=BG, text_color=TEXT,
             border_color=BORDER, border_width=1,
             corner_radius=8)
-        self.console_box.grid(row=3, column=0, padx=8, pady=(4, 4), sticky="nsew")
 
-        # ── row 4 : Zone de commande ──────────────────────────────────────────
+        # ── Zone de commande ──────────────────────────────────────────────────
         self.frame_input = ctk.CTkFrame(self, fg_color=SURFACE,
                                         border_color=BORDER, border_width=1,
                                         corner_radius=10)
-        self.frame_input.grid(row=4, column=0, padx=8, pady=(0, 8), sticky="ew")
         self.frame_input.grid_columnconfigure(1, weight=1)
 
         ctk.CTkLabel(self.frame_input, text="›", font=ctk.CTkFont(size=18),
@@ -188,6 +181,10 @@ class TabConsole(ctk.CTkFrame):
             fg_color=ACCENT, hover_color=ACCENT2,
             command=self._on_send_clicked, state="disabled")
         self.btn_send.grid(row=0, column=2, padx=(0, 8), pady=8)
+
+        # Finalisation du layout : frame_input réservé en bas, console remplit le reste
+        self.frame_input.pack(side="bottom", fill="x", padx=8, pady=(0, 8))
+        self.console_box.pack(side="top", fill="both", expand=True, padx=8, pady=(4, 4))
 
         # Câblage différé (évite le callback prématuré sur Linux)
         self.option_type.configure(command=self._on_type_selected)
@@ -232,15 +229,16 @@ class TabConsole(ctk.CTkFrame):
 
     def show_progress(self, show=True):
         if show:
-            self.progress_bar.grid(row=2, column=0, padx=0, pady=0, sticky="ew")
+            self.progress_bar.pack(side="top", fill="x", before=self.console_box)
             self.progress_bar.set(0)
         else:
-            self.progress_bar.grid_remove()
+            self.progress_bar.pack_forget()
 
     def update_progress(self, percent):
         self.progress_bar.set(percent)
 
     def append_log(self, text):
+        self.console_box.configure(state="normal")
         if self._tags_ready:
             if "ERROR" in text or "[Erreur]" in text:
                 tag = "error"
@@ -250,9 +248,10 @@ class TabConsole(ctk.CTkFrame):
                 tag = "system"
             else:
                 tag = "default"
-            self.console_box.insert("end", text + "\n", tag)
+            self.console_box._textbox.insert("end", text + "\n", tag)
         else:
-            self.console_box.insert("end", text + "\n")
+            self.console_box._textbox.insert("end", text + "\n")
+        self.console_box.configure(state="disabled")
         self.console_box.see("end")
 
     def set_running_state(self, is_running):
@@ -274,7 +273,7 @@ class TabConsole(ctk.CTkFrame):
     def set_bore_state(self, is_running, ip=""):
         if is_running:
             self.btn_bore.configure(
-                text="✕  Tunnel actif",
+                text="×  Tunnel actif",
                 fg_color=RED_TINT, hover_color="#5a2020",
                 text_color=RED, border_color=RED_BORDER)
             if ip:

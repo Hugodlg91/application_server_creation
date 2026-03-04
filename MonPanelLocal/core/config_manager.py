@@ -9,10 +9,10 @@ class ConfigManager:
         self.base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         self.properties_path = None
         
-    def set_version(self, version):
-        """Met à jour le chemin de config en fonction de la version sélectionnée."""
+    def set_version(self, server_type, version):
+        """Met à jour le chemin de config en fonction du type et de la version sélectionnés."""
         if not version: return
-        server_dir = os.path.join(self.base_dir, f"minecraft_server_{version}")
+        server_dir = os.path.join(self.base_dir, f"minecraft_server_{server_type}_{version}")
         self.properties_path = os.path.join(server_dir, "server.properties")
         
     def read_config(self):
