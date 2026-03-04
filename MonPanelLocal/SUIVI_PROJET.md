@@ -4,7 +4,14 @@ Ce document retrace l'historique de développement, les fonctionnalités ajouté
 
 ---
 
-## 🐛 Version 7.0.3 - Hotfix Render Linux (Actuelle)
+## ✨ Version 7.0.4 - Version Dropdown Scrollable (Actuelle)
+**Date :** 04 Mars 2026
+**Problème :** `CTkOptionMenu` affichait toutes les versions sans scroll, inutilisable avec 20+ entrées.
+**Correctif** (`ui/tab_console.py`) : Remplacement de `CTkOptionMenu` par `CTkComboBox` (`state="readonly"`) pour `option_version`. Support natif du scroll molette dans le dropdown. Le callback `command=` est câblé directement dans le constructeur (CTkComboBox ne souffre pas du bug Linux de déclenchement prématuré). Tous les appels `configure(state="normal")` sur `option_version` remplacés par `state="readonly"` (tab_console.py `set_running_state`, main_window.py `_action_download` finalize).
+
+---
+
+## 🐛 Version 7.0.3 - Hotfix Render Linux
 **Date :** 04 Mars 2026
 **Cause :** Stack trace confirme : `CTkButton._draw()` → `tkinter._configure()` → segfault. Sur Linux, CustomTkinter tente de dessiner les widgets via canvas avant que la fenêtre soit mapped. Les `CTkButton`/`CTkSwitch` dans `TabSettings` crashent systématiquement.
 **Correctif** (`ui/main_window.py`) : Ajout de `self.update()` immédiatement après `super().__init__()` dans `MainWindow`, avant toute instanciation de widget enfant. Force le mapping de la fenêtre Tk avant les rendus CTk.
