@@ -41,6 +41,7 @@ class MainWindow(ctk.CTk):
             on_send_command=self._action_send_command,
             on_download=self._action_download,
             on_version_change=self._action_version_change,
+            on_type_change=self._action_type_change,
             on_bore_toggle=self._action_toggle_bore
         )
         self.tab_console.pack(fill="both", expand=True)
@@ -85,30 +86,44 @@ class MainWindow(ctk.CTk):
         self._initialize_app()
 
     def _initialize_app(self):
-        """Récupère la liste des versions au démarrage, au format asynchrone pour ne pas freezer."""
+        """Récupère la liste des versions PaperMC au démarrage de manière asynchrone."""
+        self.current_server_type = "PaperMC"
         self.tab_console.append_log("[Système] Récupération des versions PaperMC depuis l'API...")
         def fetch():
-            versions = self.downloader.get_versions()
+            versions = self.downloader.get_versions("PaperMC")
             self.after(0, self._on_versions_fetched, versions)
         threading.Thread(target=fetch, daemon=True).start()
 
     def _on_versions_fetched(self, versions):
+        self.tab_console.set_loading_state(False)
         if not versions:
             self.tab_console.append_log("[Erreur] Impossible de charger les versions (Pas d'internet ?).")
         else:
-            self.tab_console.append_log(f"[Système] {len(versions)} versions disponibles identifiées au lancement.")
+            server_type = getattr(self, "current_server_type", "PaperMC")
+            self.tab_console.append_log(
+                f"[Système] {len(versions)} versions {server_type} disponibles."
+            )
         self.tab_console.set_versions(versions)
+
+    def _action_type_change(self, server_type):
+        """Déclenchée quand l'utilisateur change le type de serveur."""
+        self.current_server_type = server_type
+        self.tab_console.set_loading_state(True)
+        def fetch():
+            versions = self.downloader.get_versions(server_type)
+            self.after(0, self._on_versions_fetched, versions)
+        threading.Thread(target=fetch, daemon=True).start()
 
     def _action_version_change(self, version):
         """Déclenchée quand l'utilisateur change la version dans le menu déroulant."""
         self.current_version = version
-        self.server_manager.set_version(version)
+        server_type = getattr(self, "current_server_type", "PaperMC")
+        self.server_manager.set_version(server_type, version)
         self.config_manager.set_version(version)
-        
+
         is_inst = self.server_manager.is_installed()
         self.tab_console.update_install_state(is_inst)
-        
-        # Actualise le formulaire de config si c'est installé
+
         config_dict = self.config_manager.read_config()
         self.tab_settings.update_form(config_dict)
 
@@ -126,34 +141,53 @@ class MainWindow(ctk.CTk):
         self.server_manager.send_command(cmd)
         
     def _action_download(self):
-        if not self.current_version: return
-        
+        if not hasattr(self, "current_version") or not self.current_version: return
+        server_type = getattr(self, "current_server_type", "PaperMC")
+
         self.tab_console.show_progress(True)
         self.tab_console.btn_install.configure(state="disabled")
-        
+
         def on_log(msg):
             self.after(0, self.tab_console.append_log, msg)
-            
+
         def on_progress(pct):
             self.after(0, self.tab_console.update_progress, pct)
-            
+
         def on_finish(success):
             def finalize():
                 self.tab_console.show_progress(False)
                 self.tab_console.btn_install.configure(state="normal")
                 self.tab_console.option_version.configure(state="normal")
+                self.tab_console.option_type.configure(state="normal")
                 if success:
                     self.server_manager.accept_eula()
-                    self._action_version_change(self.current_version) # Rafraîchir l'UI
-                    self.tab_console.append_log(f"[Système] L'installation de la version {self.current_version} est terminée. Le bouton Démarrer est disponible.")
+                    self._action_version_change(self.current_version)
+                    self.tab_console.append_log(
+                        f"[Système] Installation {server_type} {self.current_version} terminée !"
+                    )
             self.after(0, finalize)
-            
-        self.downloader.download_version(
-            self.current_version, 
-            on_log_callback=on_log, 
-            on_progress_callback=on_progress, 
-            on_finish_callback=on_finish
-        )
+
+        def prepare_and_download():
+            java_path = None
+            if server_type == "Fabric":
+                java_ver = self.server_manager.java_manager.get_required_java_version(
+                    self.current_version
+                )
+                on_log(f"[Système] Vérification de Java {java_ver} pour l'installateur Fabric...")
+                ok = self.server_manager.java_manager.ensure_java(java_ver, on_log)
+                if ok:
+                    java_path = self.server_manager.java_manager.get_java_executable(java_ver)
+
+            self.downloader.download_version(
+                server_type=server_type,
+                version=self.current_version,
+                java_exe_path=java_path,
+                on_log_callback=on_log,
+                on_progress_callback=on_progress,
+                on_finish_callback=on_finish
+            )
+
+        threading.Thread(target=prepare_and_download, daemon=True).start()
 
     def _action_search_plugins(self, query):
         def on_success(results):

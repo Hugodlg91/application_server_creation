@@ -22,20 +22,30 @@ class ServerManager:
         
         self.connected_players = set()
         self.on_players_update_callback = None
-        
+
+        self.server_type = "PaperMC"
+        self.launch_jar = "server.jar"
+
         self.on_log_received = on_log_received
         self.on_status_changed = on_status_changed
 
         self.scheduler_active = False
         self.scheduler_thread = None
 
-    def set_version(self, version):
-        """Met à jour les chemins cibles selon la version de minecraft sélectionnée."""
+    def set_version(self, server_type, version):
+        """Met à jour les chemins cibles selon le type et la version sélectionnés."""
         if not version:
             return
+        self.server_type = server_type
         self.current_version = version
-        self.server_dir = os.path.join(self.base_dir, f"minecraft_server_{version}")
-        self.jar_path = os.path.join(self.server_dir, "server.jar")
+        self.server_dir = os.path.join(self.base_dir, f"minecraft_server_{server_type}_{version}")
+
+        if server_type == "Fabric":
+            self.launch_jar = "fabric-server-launch.jar"
+        else:
+            self.launch_jar = "server.jar"
+
+        self.jar_path = os.path.join(self.server_dir, self.launch_jar)
         self.eula_path = os.path.join(self.server_dir, "eula.txt")
 
     def is_installed(self):
@@ -115,7 +125,7 @@ class ServerManager:
                 self._notify_log(f"[Système] Démarrage avec {memory_mb} Mo RAM | Aikar Flags : {aikar_label}")
 
                 self.process = subprocess.Popen(
-                    [java_exe] + java_args + ["-jar", self.jar_path, "nogui"],
+                    [java_exe] + java_args + ["-jar", self.launch_jar, "nogui"],
                     cwd=self.server_dir,
                     stdin=subprocess.PIPE,
                     stdout=subprocess.PIPE,

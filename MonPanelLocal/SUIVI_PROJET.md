@@ -4,7 +4,19 @@ Ce document retrace l'historique de développement, les fonctionnalités ajouté
 
 ---
 
-## 🖱️ Version 6.3 - Scroll Molette Universel (Actuelle)
+## 🌐 Version 7.0 - Support Multi-Serveur (PaperMC / Vanilla / Fabric) (Actuelle)
+**Date :** 04 Mars 2026
+**Objectif :** Permettre à l'utilisateur de choisir le type de serveur (PaperMC, Vanilla, Fabric) en plus de la version Minecraft.
+
+**Modifications Apportées :**
+- **`core/downloader.py` — Réécriture complète** : `get_versions(server_type)` interroge l'API adaptée selon le type (PaperMC : api.papermc.io, Vanilla : launchermeta.mojang.com avec filtre `type==release`, Fabric : meta.fabricmc.net avec filtre `stable==True`). `download_version(server_type, version, java_exe_path, ...)` dispatche vers trois logiques distinctes. Le dossier cible suit le schéma `minecraft_server_{Type}_{version}/`. Pour Fabric : téléchargement de fabric-installer.jar (0→50%), lancement Java avec `-mcversion`/`-loader`/`-downloadMinecraft` (50→100%), nettoyage de l'installateur.
+- **`core/server_manager.py`** : Ajout de `self.server_type = "PaperMC"` et `self.launch_jar = "server.jar"` dans `__init__`. `set_version(server_type, version)` (signature étendue) calcule `server_dir = minecraft_server_{type}_{version}/` et positionne `launch_jar` à `fabric-server-launch.jar` pour Fabric ou `server.jar` sinon. Le `subprocess.Popen` utilise désormais `self.launch_jar` au lieu du hardcode `"server.jar"`.
+- **`ui/tab_console.py`** : Ajout du `CTkOptionMenu` Type (`PaperMC`/`Vanilla`/`Fabric`, largeur 110) placé avant le menu Version. Nouveau paramètre `on_type_change` dans la signature. Méthodes `_on_type_selected` et `set_loading_state(loading)` ajoutées — cette dernière grise les deux menus et affiche "Chargement..." pendant la récupération asynchrone des versions.
+- **`ui/main_window.py`** : `_initialize_app()` initialise `current_server_type = "PaperMC"` et appelle `get_versions("PaperMC")`. `_on_versions_fetched()` appelle `set_loading_state(False)` avant d'afficher. Nouvelle méthode `_action_type_change(server_type)` : met à jour `current_server_type`, active `set_loading_state(True)` et relance un fetch asynchrone. `_action_version_change()` passe désormais `server_type` à `server_manager.set_version()`. `_action_download()` délègue à un thread `prepare_and_download` qui, pour Fabric uniquement, appelle `ensure_java()` + `get_java_executable()` avant de passer `java_exe_path` au downloader.
+
+---
+
+## 🖱️ Version 6.3 - Scroll Molette Universel
 **Date :** 04 Mars 2026
 **Objectif :** Rendre le scroll à la molette fonctionnel sur tous les onglets contenant une zone défilante, sur Linux (et Windows/macOS).
 

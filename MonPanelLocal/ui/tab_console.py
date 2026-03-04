@@ -4,7 +4,8 @@ class TabConsole(ctk.CTkFrame):
     """
     Onglet contenant la console en direct et les contrôles du serveur pour la version choisie.
     """
-    def __init__(self, master, on_start, on_stop, on_send_command, on_download, on_version_change, on_bore_toggle=None, **kwargs):
+    def __init__(self, master, on_start, on_stop, on_send_command, on_download,
+                 on_version_change, on_type_change, on_bore_toggle=None, **kwargs):
         super().__init__(master, **kwargs)
 
         self.on_start = on_start
@@ -12,6 +13,7 @@ class TabConsole(ctk.CTkFrame):
         self.on_send_command = on_send_command
         self.on_download = on_download
         self.on_version_change = on_version_change
+        self.on_type_change = on_type_change
         self.on_bore_toggle = on_bore_toggle
 
         self.command_history = []
@@ -24,6 +26,18 @@ class TabConsole(ctk.CTkFrame):
         # === Frame des contrôles haut ===
         self.frame_controls = ctk.CTkFrame(self)
         self.frame_controls.grid(row=0, column=0, padx=5, pady=5, sticky="ew")
+
+        # Choix du type de serveur
+        self.lbl_type = ctk.CTkLabel(self.frame_controls, text="Type:")
+        self.lbl_type.pack(side="left", padx=(5,2), pady=5)
+
+        self.option_type = ctk.CTkOptionMenu(
+            self.frame_controls,
+            values=["PaperMC", "Vanilla", "Fabric"],
+            command=self._on_type_selected,
+            width=110
+        )
+        self.option_type.pack(side="left", padx=(0,5), pady=5)
 
         # Choix de la version
         self.lbl_version = ctk.CTkLabel(self.frame_controls, text="Version:")
@@ -101,6 +115,18 @@ class TabConsole(ctk.CTkFrame):
 
     def _on_version_selected(self, value):
         self.on_version_change(value)
+
+    def _on_type_selected(self, value):
+        self.on_type_change(value)
+
+    def set_loading_state(self, loading: bool):
+        """Désactive les contrôles pendant le chargement des versions."""
+        state = "disabled" if loading else "normal"
+        self.option_type.configure(state=state)
+        self.option_version.configure(state=state)
+        if loading:
+            self.option_version.configure(values=["Chargement..."])
+            self.option_version.set("Chargement...")
 
     def update_install_state(self, is_installed):
         """Affiche Installer ou Démarrer selon si la version est déjà téléchargée."""
