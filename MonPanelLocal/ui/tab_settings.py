@@ -1,3 +1,4 @@
+import tkinter as tk
 import customtkinter as ctk
 
 class TabSettings(ctk.CTkFrame):
@@ -13,8 +14,25 @@ class TabSettings(ctk.CTkFrame):
         self.on_start_scheduler = on_start_scheduler
         self.on_stop_scheduler = on_stop_scheduler
 
-        self.scroll_container = ctk.CTkScrollableFrame(self)
-        self.scroll_container.pack(fill="both", expand=True)
+        # Scrollable container : Canvas natif + scroll_container enfant de SELF
+        # (CTkFrame(canvas) crashe sur Linux car CustomTkinter ne peut pas remonter
+        # la chaîne parente jusqu'à un widget CTk pour la gestion des couleurs)
+        bg = "#2b2b2b" if ctk.get_appearance_mode() == "Dark" else "#ebebeb"
+        self._canvas = tk.Canvas(self, highlightthickness=0, bd=0, bg=bg)
+        self._scrollbar = ctk.CTkScrollbar(self, orientation="vertical", command=self._canvas.yview)
+        self._canvas.configure(yscrollcommand=self._scrollbar.set)
+        self._scrollbar.pack(side="right", fill="y")
+        self._canvas.pack(side="left", fill="both", expand=True)
+
+        # scroll_container est enfant de SELF (chaîne CTk intacte), affiché via le canvas
+        self.scroll_container = ctk.CTkFrame(self)
+        self._canvas_window = self._canvas.create_window((0, 0), window=self.scroll_container, anchor="nw")
+
+        self.scroll_container.bind("<Configure>", lambda e: self._canvas.configure(scrollregion=self._canvas.bbox("all")))
+        self._canvas.bind("<Configure>", lambda e: self._canvas.itemconfig(self._canvas_window, width=e.width))
+        self._canvas.bind("<Button-4>", lambda e: self._canvas.yview_scroll(-1, "units"))
+        self._canvas.bind("<Button-5>", lambda e: self._canvas.yview_scroll(1, "units"))
+
         self.scroll_container.grid_columnconfigure(1, weight=1)
 
         self.lbl_title = ctk.CTkLabel(self.scroll_container, text="Paramètres du Serveur (server.properties)", font=("Arial", 16, "bold"))
@@ -31,7 +49,6 @@ class TabSettings(ctk.CTkFrame):
 
         self.status_lbl_row = len(self.properties_to_show) + 2
 
-        # Build UI structure empty first
         self.row_idx = 1
         for key, label_text in self.properties_to_show.items():
             lbl = ctk.CTkLabel(self.scroll_container, text=label_text)
@@ -141,7 +158,7 @@ class TabSettings(ctk.CTkFrame):
         if self.switch_scheduler.get() == 1:
             if self.on_start_scheduler:
                 msg = self.entry_scheduler_msg.get().strip() or "Bienvenue sur le serveur !"
-                interval_str = self.option_scheduler_interval.get()  # ex: "15 min"
+                interval_str = self.option_scheduler_interval.get()
                 interval = int(interval_str.split()[0])
                 self.on_start_scheduler(msg, interval)
         else:
@@ -149,7 +166,7 @@ class TabSettings(ctk.CTkFrame):
                 self.on_stop_scheduler()
 
     def _on_save_perf_clicked(self):
-        ram_str = self.option_ram.get()  # ex: "2048 Mo"
+        ram_str = self.option_ram.get()
         ram_mb = int(ram_str.split()[0])
         aikar = self.switch_aikar.get() == 1
         success = self.on_save_perf_callback(ram_mb, aikar)

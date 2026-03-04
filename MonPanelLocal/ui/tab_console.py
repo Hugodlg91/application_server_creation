@@ -16,6 +16,7 @@ class TabConsole(ctk.CTkFrame):
 
         self.command_history = []
         self.history_index = -1
+        self._tags_ready = False
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(2, weight=1)
@@ -62,12 +63,6 @@ class TabConsole(ctk.CTkFrame):
         self.console_box = ctk.CTkTextbox(self, state="disabled", font=("Consolas", 12))
         self.console_box.grid(row=2, column=0, padx=5, pady=5, sticky="nsew")
 
-        # Configuration des tags de couleur
-        self.console_box._textbox.tag_configure("error", foreground="#f87171")
-        self.console_box._textbox.tag_configure("warn", foreground="#fbbf24")
-        self.console_box._textbox.tag_configure("system", foreground="#93c5fd")
-        self.console_box._textbox.tag_configure("default", foreground="#e2e8f0")
-
         # === Frame pour l'envoi de commandes (bas) ===
         self.frame_input = ctk.CTkFrame(self)
         self.frame_input.grid(row=3, column=0, padx=5, pady=5, sticky="ew")
@@ -81,6 +76,17 @@ class TabConsole(ctk.CTkFrame):
 
         self.btn_send = ctk.CTkButton(self.frame_input, text="Envoyer", command=self._on_send_clicked, state="disabled")
         self.btn_send.grid(row=0, column=1, padx=5, pady=5)
+
+        # Configurer les tags couleur après le premier rendu (évite segfault Linux pré-mainloop)
+        self.after(100, self._configure_log_tags)
+
+    def _configure_log_tags(self):
+        """Configure les tags de couleur sur le widget Text interne, après le démarrage de mainloop."""
+        self.console_box._textbox.tag_configure("error", foreground="#f87171")
+        self.console_box._textbox.tag_configure("warn", foreground="#fbbf24")
+        self.console_box._textbox.tag_configure("system", foreground="#93c5fd")
+        self.console_box._textbox.tag_configure("default", foreground="#e2e8f0")
+        self._tags_ready = True
 
     def set_versions(self, versions):
         """Remplit le menu déroulant avec les versions récupérées."""
@@ -116,19 +122,19 @@ class TabConsole(ctk.CTkFrame):
         self.progress_bar.set(percent)
 
     def append_log(self, text):
-        tb = self.console_box._textbox
-        tb.configure(state="normal")
-        if "ERROR" in text or "[Erreur]" in text:
-            tag = "error"
-        elif "WARN" in text or "WARNING" in text:
-            tag = "warn"
-        elif "[Système]" in text or "[Bore]" in text or "[Java]" in text:
-            tag = "system"
+        if self._tags_ready:
+            if "ERROR" in text or "[Erreur]" in text:
+                tag = "error"
+            elif "WARN" in text or "WARNING" in text:
+                tag = "warn"
+            elif "[Système]" in text or "[Bore]" in text or "[Java]" in text:
+                tag = "system"
+            else:
+                tag = "default"
+            self.console_box.insert("end", text + "\n", tag)
         else:
-            tag = "default"
-        tb.insert("end", text + "\n", tag)
-        tb.see("end")
-        tb.configure(state="disabled")
+            self.console_box.insert("end", text + "\n")
+        self.console_box.see("end")
 
     def set_running_state(self, is_running):
         """Désactive la sélection pendant que le serveur tourne."""
