@@ -1,5 +1,6 @@
 import sys
 import os
+import threading
 
 # Optionnel : S'assurer que le dossier parent est dans le PYTHONPATH si besoin
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -42,14 +43,22 @@ def main():
     
     # 3. Fonction pour gérer la fermeture propre
     def on_closing():
-        # Arrêt immédiat de bore et autres services non-process
         bore_manager.stop()
-        
+
         if server_manager.is_running:
-            server_manager.on_log_received("[Système] Arrêt automatique du serveur avant la fermeture...")
+            server_manager.on_log_received(
+                "[Système] Arrêt automatique du serveur avant la fermeture...")
             server_manager.stop_server()
-            # Attendre un peu pour que le stop s'envoie
-            app.after(3000, lambda: _final_close(app, system_monitor, server_manager))
+
+            def _wait_and_close():
+                if server_manager.process:
+                    try:
+                        server_manager.process.wait(timeout=30)
+                    except Exception:
+                        pass
+                app.after(0, _final_close, app, system_monitor, server_manager)
+
+            threading.Thread(target=_wait_and_close, daemon=True).start()
         else:
             _final_close(app, system_monitor, server_manager)
             

@@ -113,3 +113,32 @@ class ConfigManager:
             return True
         except Exception:
             return False
+
+    def load_server_type(self) -> str:
+        """Retourne le type de serveur sauvegardé (défaut : 'PaperMC')."""
+        path = os.path.join(self.base_dir, "panel_config.json")
+        if not os.path.exists(path):
+            return "PaperMC"
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            return data.get("server_type", "PaperMC")
+        except Exception:
+            return "PaperMC"
+
+    def save_server_type(self, server_type: str):
+        """Sauvegarde le type de serveur sans écraser les autres clés de panel_config.json."""
+        path = os.path.join(self.base_dir, "panel_config.json")
+        data = {}
+        if os.path.exists(path):
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+            except Exception:
+                pass
+        data["server_type"] = server_type
+        try:
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2)
+        except Exception:
+            pass

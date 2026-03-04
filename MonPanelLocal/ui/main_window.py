@@ -118,12 +118,14 @@ class MainWindow(ctk.CTk):
     # ── Initialisation ────────────────────────────────────────────────────────
 
     def _initialize_app(self):
-        self.current_server_type = "PaperMC"
+        saved_type = self.config_manager.load_server_type()
+        self.current_server_type = saved_type
+        self.tab_console.option_type.set(saved_type)
         self.after(0, self.tab_console.append_log,
-                   "[Système] Récupération des versions PaperMC depuis l'API...")
+                   f"[Système] Récupération des versions {saved_type} depuis l'API...")
 
         def fetch():
-            versions = self.downloader.get_versions("PaperMC")
+            versions = self.downloader.get_versions(saved_type)
             self.after(0, self._on_versions_fetched, versions)
 
         threading.Thread(target=fetch, daemon=True).start()
@@ -143,6 +145,7 @@ class MainWindow(ctk.CTk):
 
     def _action_type_change(self, server_type):
         self.current_server_type = server_type
+        self.config_manager.save_server_type(server_type)
         self.tab_console.set_loading_state(True)
 
         def fetch():
