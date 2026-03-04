@@ -46,8 +46,11 @@ def main():
         bore_manager.stop()
 
         if server_manager.is_running:
-            server_manager.on_log_received(
-                "[Système] Arrêt automatique du serveur avant la fermeture...")
+            # Bloquer les clics supplémentaires sur la croix
+            app.protocol("WM_DELETE_WINDOW", lambda: None)
+            app.title("MonPanelLocal — Arrêt en cours...")
+            app.tab_console.append_log(
+                "[Système] Arrêt du serveur en cours, veuillez patienter...")
             server_manager.stop_server()
 
             def _wait_and_close():
