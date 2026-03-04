@@ -4,7 +4,23 @@ Ce document retrace l'historique de développement, les fonctionnalités ajouté
 
 ---
 
-## ✨ Version 8.1 - Améliorations Visuelles (Actuelle)
+## 🐛 Version 8.2 - Fix Layout Console + Settings (Actuelle)
+**Date :** 04 Mars 2026
+**Problème 1** (`ui/tab_console.py`) : `grp_server` (CTkFrame pack) s'étirait horizontalement → les boutons Installer/Démarrer disparaissaient hors de la zone visible.
+**Correctif** : Réécriture complète de `frame_controls` en grid (col 0→10). Suppression de `grp_server`. Seul col 7 (spacer) prend `weight=1`. `btn_install`/`btn_start` alternent via `.grid()`/`.grid_remove()` sur la même col 5. `entry_bore_ip` masquée via `.grid_remove()`, affichée via `.grid()` dans `set_bore_state()`.
+**Problème 2** (`ui/tab_settings.py`) : Badge emoji CTkFrame 22×22 trop petit — `pack_propagate(False)` écrasait l'emoji.
+**Correctif** : Badge supprimé. Icône rendue directement par un `CTkLabel` (size=14, text_color=ACCENT) dans le `hdr`.
+
+---
+
+## 🐛 Version 8.1.1 - Fix update_install_state TclError
+**Date :** 04 Mars 2026
+**Cause :** `after=self.option_version` dans `update_install_state()` — `option_version` est un enfant de `grp_server`, pas de `frame_controls`. Tkinter exige que le widget passé à `after=` soit un sibling (même parent). → TclError à chaque changement de version, le bouton Installer/Démarrer ne basculait jamais.
+**Correctif** (`ui/tab_console.py`) : `grp_server` sauvegardé comme `self.grp_server` dans `__init__`, utilisé comme référence `after=self.grp_server` dans `update_install_state()`.
+
+---
+
+## ✨ Version 8.1 - Améliorations Visuelles
 **Date :** 04 Mars 2026
 **Objectif :** Polissage visuel approfondi de tous les onglets suite à la refonte v8.0.
 

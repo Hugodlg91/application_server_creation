@@ -72,13 +72,9 @@ class TabSettings(ctk.CTkFrame):
         hdr.grid(row=0, column=0, columnspan=2, padx=14, pady=(12, 6), sticky="w")
 
         if icon:
-            badge = ctk.CTkFrame(hdr, fg_color=ACCENT_TINT,
-                                 width=22, height=22, corner_radius=6)
-            badge.pack(side="left", padx=(0, 8))
-            badge.pack_propagate(False)
-            ctk.CTkLabel(badge, text=icon,
-                         font=ctk.CTkFont(size=11)
-                         ).place(relx=0.5, rely=0.5, anchor="center")
+            ctk.CTkLabel(hdr, text=icon,
+                         font=ctk.CTkFont(size=14), text_color=ACCENT
+                         ).pack(side="left", padx=(0, 6))
 
         ctk.CTkLabel(hdr, text=title.upper(),
                      font=ctk.CTkFont(size=10, weight="bold"), text_color=SUB

@@ -40,92 +40,101 @@ class TabConsole(ctk.CTkFrame):
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(3, weight=1)   # row 3 = console_box
 
-        # ── row 0 : Barre de contrôles ────────────────────────────────────────
+        # ── row 0 : Barre de contrôles (grid) ─────────────────────────────────
         self.frame_controls = ctk.CTkFrame(self, fg_color=SURFACE,
                                            border_color=BORDER, border_width=1,
                                            corner_radius=10)
         self.frame_controls.grid(row=0, column=0, padx=8, pady=(8, 4), sticky="ew")
+        self.frame_controls.grid_columnconfigure(7, weight=1)  # spacer
 
-        # Groupe gauche : sélection du serveur
-        grp_server = ctk.CTkFrame(self.frame_controls, fg_color=BG,
-                                  border_color=BORDER, border_width=1,
-                                  corner_radius=8)
-        grp_server.pack(side="left", padx=(10, 0), pady=8)
+        # col 0 : label Type
+        ctk.CTkLabel(self.frame_controls, text="Type", text_color=SUB,
+                     font=ctk.CTkFont(size=11)
+                     ).grid(row=0, column=0, padx=(12, 4), pady=8)
 
-        ctk.CTkLabel(grp_server, text="Type", text_color=SUB,
-                     font=ctk.CTkFont(size=11)).pack(side="left", padx=(10, 4))
+        # col 1 : option_type
         self.option_type = ctk.CTkOptionMenu(
-            grp_server,
+            self.frame_controls,
             values=["PaperMC", "Vanilla", "Fabric"],
             width=106, height=30,
             fg_color=BG, button_color=ACCENT,
             button_hover_color=ACCENT2, text_color=TEXT,
             dropdown_fg_color=SURFACE, dropdown_text_color=TEXT,
             dropdown_hover_color=BORDER)
-        self.option_type.pack(side="left", padx=(0, 6), pady=4)
+        self.option_type.grid(row=0, column=1, padx=(0, 4), pady=8)
 
-        # Séparateur vertical
-        ctk.CTkFrame(grp_server, fg_color=BORDER, width=1).pack(
-            side="left", fill="y", pady=6)
+        # col 2 : séparateur vertical
+        ctk.CTkFrame(self.frame_controls, fg_color=BORDER, width=1
+                     ).grid(row=0, column=2, padx=4, pady=10, sticky="ns")
 
-        ctk.CTkLabel(grp_server, text="Version", text_color=SUB,
-                     font=ctk.CTkFont(size=11)).pack(side="left", padx=(8, 4))
+        # col 3 : label Version
+        ctk.CTkLabel(self.frame_controls, text="Version", text_color=SUB,
+                     font=ctk.CTkFont(size=11)
+                     ).grid(row=0, column=3, padx=(4, 4), pady=8)
+
+        # col 4 : option_version
         self.option_version = ScrollableDropdown(
-            grp_server,
+            self.frame_controls,
             values=["Chargement..."],
             width=116, height=30,
             fg_color=BG, text_color=TEXT,
             hover_color=SURFACE,
             command=self._on_version_selected)
-        self.option_version.pack(side="left", padx=(0, 10), pady=4)
+        self.option_version.grid(row=0, column=4, padx=(0, 6), pady=8)
 
-        # Boutons action (milieu)
+        # col 5 : btn_install / btn_start (alternent sur la même cellule)
         self.btn_install = ctk.CTkButton(
             self.frame_controls, text="⬇  Installer", width=110,
             fg_color=SURFACE, hover_color=BG,
             border_color=BORDER, border_width=1,
             text_color=SUB, height=32,
             command=self._on_download_clicked)
-        self.btn_install.pack(side="left", padx=(8, 4), pady=8)
+        self.btn_install.grid(row=0, column=5, padx=(6, 4), pady=8)
 
         self.btn_start = ctk.CTkButton(
             self.frame_controls, text="▶  Démarrer", width=120,
             fg_color=ACCENT, hover_color=ACCENT2,
             text_color=TEXT, height=32,
             command=self._on_start_clicked)
-        self.btn_start.pack(side="left", padx=4, pady=8)
-        self.btn_start.pack_forget()
+        self.btn_start.grid(row=0, column=5, padx=(6, 4), pady=8)
+        self.btn_start.grid_remove()
 
+        # col 6 : btn_stop
         self.btn_stop = ctk.CTkButton(
             self.frame_controls, text="■  Arrêter", width=110,
             fg_color=RED_TINT, hover_color="#5a2020",
             text_color=RED, border_color=RED_BORDER,
             border_width=1, height=32, state="disabled",
             command=self._on_stop_clicked)
-        self.btn_stop.pack(side="left", padx=4, pady=8)
+        self.btn_stop.grid(row=0, column=6, padx=4, pady=8)
 
-        # Groupe droite : bore + statut
+        # col 7 : spacer (weight=1, vide)
+
+        # col 8 : pill_state
+        self.pill_state = ctk.CTkFrame(self.frame_controls,
+                                       fg_color=RED_TINT, corner_radius=12)
+        self.pill_state.grid(row=0, column=8, padx=(4, 6), pady=8)
+        self.lbl_state = ctk.CTkLabel(
+            self.pill_state, text="● Éteint",
+            font=ctk.CTkFont(size=11, weight="bold"), text_color=RED)
+        self.lbl_state.pack(padx=12, pady=5)
+
+        # col 9 : entry_bore_ip (masquée par défaut)
+        self.entry_bore_ip = ctk.CTkEntry(
+            self.frame_controls, width=160, state="readonly",
+            justify="center", fg_color=BG, border_color=BORDER,
+            text_color=BLUE, font=("Consolas", 11))
+        self.entry_bore_ip.grid(row=0, column=9, padx=4, pady=8)
+        self.entry_bore_ip.grid_remove()
+
+        # col 10 : btn_bore
         self.btn_bore = ctk.CTkButton(
             self.frame_controls, text="🌐  Public", width=100,
             fg_color=BLUE_TINT, hover_color=SURFACE,
             text_color=BLUE, border_color=BLUE_BORDER,
             border_width=1, height=32,
             command=self._on_bore_clicked)
-        self.btn_bore.pack(side="right", padx=(4, 10), pady=8)
-
-        self.entry_bore_ip = ctk.CTkEntry(
-            self.frame_controls, width=160, state="readonly",
-            justify="center", fg_color=BG, border_color=BORDER,
-            text_color=BLUE, font=("Consolas", 11))
-
-        # Pill statut (côté droit)
-        self.pill_state = ctk.CTkFrame(self.frame_controls,
-                                       fg_color=RED_TINT, corner_radius=12)
-        self.pill_state.pack(side="right", padx=(4, 8), pady=8)
-        self.lbl_state = ctk.CTkLabel(
-            self.pill_state, text="● Éteint",
-            font=ctk.CTkFont(size=11, weight="bold"), text_color=RED)
-        self.lbl_state.pack(padx=12, pady=5)
+        self.btn_bore.grid(row=0, column=10, padx=(4, 10), pady=8)
 
         # ── row 1 : Header console ────────────────────────────────────────────
         hdr_console = ctk.CTkFrame(self, fg_color="transparent")
@@ -141,6 +150,7 @@ class TabConsole(ctk.CTkFrame):
             self, height=4, corner_radius=0, border_width=0,
             progress_color=ACCENT, fg_color=BORDER)
         self.progress_bar.set(0)
+        self.progress_bar.grid(row=2, column=0, padx=0, pady=0, sticky="ew")
         self.progress_bar.grid_remove()
 
         # ── row 3 : Console textbox ───────────────────────────────────────────
@@ -214,13 +224,11 @@ class TabConsole(ctk.CTkFrame):
 
     def update_install_state(self, is_installed):
         if is_installed:
-            self.btn_install.pack_forget()
-            self.btn_start.pack(side="left", padx=4, pady=8,
-                                after=self.btn_install)
+            self.btn_install.grid_remove()
+            self.btn_start.grid(row=0, column=5, padx=(6, 4), pady=8)
         else:
-            self.btn_start.pack_forget()
-            self.btn_install.pack(side="left", padx=(8, 4), pady=8,
-                                  after=self.option_version)
+            self.btn_start.grid_remove()
+            self.btn_install.grid(row=0, column=5, padx=(6, 4), pady=8)
 
     def show_progress(self, show=True):
         if show:
@@ -270,18 +278,17 @@ class TabConsole(ctk.CTkFrame):
                 fg_color=RED_TINT, hover_color="#5a2020",
                 text_color=RED, border_color=RED_BORDER)
             if ip:
-                self.entry_bore_ip.pack(side="right", padx=4, pady=8,
-                                        before=self.btn_bore)
                 self.entry_bore_ip.configure(state="normal")
                 self.entry_bore_ip.delete(0, "end")
                 self.entry_bore_ip.insert(0, ip)
                 self.entry_bore_ip.configure(state="readonly")
+                self.entry_bore_ip.grid(row=0, column=9, padx=4, pady=8)
         else:
             self.btn_bore.configure(
                 text="🌐  Public", fg_color=BLUE_TINT,
                 hover_color=SURFACE, text_color=BLUE,
                 border_color=BLUE_BORDER)
-            self.entry_bore_ip.pack_forget()
+            self.entry_bore_ip.grid_remove()
 
     # ── Handlers ──────────────────────────────────────────────────────────────
 
