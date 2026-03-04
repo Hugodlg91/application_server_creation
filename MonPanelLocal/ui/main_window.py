@@ -159,7 +159,7 @@ class MainWindow(ctk.CTk):
             def finalize():
                 self.tab_console.show_progress(False)
                 self.tab_console.btn_install.configure(state="normal")
-                self.tab_console.option_version.configure(state="normal")
+                self.tab_console.option_version.configure(state="readonly")
                 self.tab_console.option_type.configure(state="normal")
                 if success:
                     self.server_manager.accept_eula()
