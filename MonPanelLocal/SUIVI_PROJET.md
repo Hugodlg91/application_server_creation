@@ -4,7 +4,23 @@ Ce document retrace l'historique de développement, les fonctionnalités ajouté
 
 ---
 
-## ✨ Version 7.0.4 - Version Dropdown Scrollable (Actuelle)
+## ✨ Version 7.1 - Widget ScrollableDropdown Custom (Actuelle)
+**Date :** 04 Mars 2026
+**Objectif :** Remplacer CTkComboBox par un widget custom réutilisable offrant un popup avec scroll natif.
+
+**Nouveau fichier** `ui/widgets/scrollable_dropdown.py` :
+- `ScrollableDropdown(ctk.CTkButton)` : affiche la valeur courante + `▼`
+- Au clic : `CTkToplevel` sans barre de titre (`overrideredirect(True)`, `-topmost`), positionné dynamiquement sous le widget
+- Contenu : `CTkScrollableFrame` avec un `CTkButton` par entrée (`anchor="w"`, `fg_color="transparent"`)
+- Max 8 entrées visibles (hauteur `n * 30px`), scroll molette au-delà (`<Button-4/5>` Linux)
+- Fermeture : `<FocusOut>`, `<Escape>`, ou sélection d'un item
+- API compatible : `get()`, `set()`, `configure(values=, state=, command=)` — `state="readonly"` → mappé `"normal"`
+
+**Modifications** `ui/tab_console.py` : import + remplacement de `CTkComboBox` par `ScrollableDropdown`. Toutes les méthodes existantes restent inchangées (API rétrocompatible).
+
+---
+
+## ✨ Version 7.0.4 - Version Dropdown Scrollable
 **Date :** 04 Mars 2026
 **Problème :** `CTkOptionMenu` affichait toutes les versions sans scroll, inutilisable avec 20+ entrées.
 **Correctif** (`ui/tab_console.py`) : Remplacement de `CTkOptionMenu` par `CTkComboBox` (`state="readonly"`) pour `option_version`. Support natif du scroll molette dans le dropdown. Le callback `command=` est câblé directement dans le constructeur (CTkComboBox ne souffre pas du bug Linux de déclenchement prématuré). Tous les appels `configure(state="normal")` sur `option_version` remplacés par `state="readonly"` (tab_console.py `set_running_state`, main_window.py `_action_download` finalize).

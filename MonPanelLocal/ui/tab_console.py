@@ -1,4 +1,5 @@
 import customtkinter as ctk
+from .widgets.scrollable_dropdown import ScrollableDropdown
 
 class TabConsole(ctk.CTkFrame):
     """
@@ -42,11 +43,10 @@ class TabConsole(ctk.CTkFrame):
         self.lbl_version = ctk.CTkLabel(self.frame_controls, text="Version:")
         self.lbl_version.pack(side="left", padx=(5,2), pady=5)
 
-        self.option_version = ctk.CTkComboBox(
+        self.option_version = ScrollableDropdown(
             self.frame_controls,
             values=["Chargement..."],
             width=120,
-            state="readonly",
             command=self._on_version_selected
         )
         self.option_version.pack(side="left", padx=(0,5), pady=5)
