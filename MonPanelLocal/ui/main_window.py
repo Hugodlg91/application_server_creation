@@ -9,7 +9,8 @@ from .tab_plugins import TabPlugins
 class MainWindow(ctk.CTk):
     def __init__(self, server_manager, config_manager, downloader, system_monitor, plugin_manager, bore_manager):
         super().__init__()
-        
+        self.update()   # Force le mapping de la fenêtre avant les rendus CTk (Linux)
+
         self.server_manager = server_manager
         self.config_manager = config_manager
         self.downloader = downloader
@@ -88,7 +89,8 @@ class MainWindow(ctk.CTk):
     def _initialize_app(self):
         """Récupère la liste des versions PaperMC au démarrage de manière asynchrone."""
         self.current_server_type = "PaperMC"
-        self.tab_console.append_log("[Système] Récupération des versions PaperMC depuis l'API...")
+        self.after(0, self.tab_console.append_log,
+                   "[Système] Récupération des versions PaperMC depuis l'API...")
         def fetch():
             versions = self.downloader.get_versions("PaperMC")
             self.after(0, self._on_versions_fetched, versions)

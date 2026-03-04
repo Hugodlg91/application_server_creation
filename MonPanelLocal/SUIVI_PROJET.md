@@ -4,7 +4,14 @@ Ce document retrace l'historique de développement, les fonctionnalités ajouté
 
 ---
 
-## 🌐 Version 7.0 - Support Multi-Serveur (PaperMC / Vanilla / Fabric) (Actuelle)
+## 🐛 Version 7.0.3 - Hotfix Render Linux (Actuelle)
+**Date :** 04 Mars 2026
+**Cause :** Stack trace confirme : `CTkButton._draw()` → `tkinter._configure()` → segfault. Sur Linux, CustomTkinter tente de dessiner les widgets via canvas avant que la fenêtre soit mapped. Les `CTkButton`/`CTkSwitch` dans `TabSettings` crashent systématiquement.
+**Correctif** (`ui/main_window.py`) : Ajout de `self.update()` immédiatement après `super().__init__()` dans `MainWindow`, avant toute instanciation de widget enfant. Force le mapping de la fenêtre Tk avant les rendus CTk.
+
+---
+
+## 🌐 Version 7.0 - Support Multi-Serveur (PaperMC / Vanilla / Fabric)
 **Date :** 04 Mars 2026
 **Objectif :** Permettre à l'utilisateur de choisir le type de serveur (PaperMC, Vanilla, Fabric) en plus de la version Minecraft.
 

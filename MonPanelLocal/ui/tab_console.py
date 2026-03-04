@@ -34,7 +34,6 @@ class TabConsole(ctk.CTkFrame):
         self.option_type = ctk.CTkOptionMenu(
             self.frame_controls,
             values=["PaperMC", "Vanilla", "Fabric"],
-            command=self._on_type_selected,
             width=110
         )
         self.option_type.pack(side="left", padx=(0,5), pady=5)
@@ -43,7 +42,7 @@ class TabConsole(ctk.CTkFrame):
         self.lbl_version = ctk.CTkLabel(self.frame_controls, text="Version:")
         self.lbl_version.pack(side="left", padx=(5,2), pady=5)
 
-        self.option_version = ctk.CTkOptionMenu(self.frame_controls, values=["Chargement..."], command=self._on_version_selected)
+        self.option_version = ctk.CTkOptionMenu(self.frame_controls, values=["Chargement..."])
         self.option_version.pack(side="left", padx=(0,5), pady=5)
 
         # Bouton Installer
@@ -90,6 +89,10 @@ class TabConsole(ctk.CTkFrame):
 
         self.btn_send = ctk.CTkButton(self.frame_input, text="Envoyer", command=self._on_send_clicked, state="disabled")
         self.btn_send.grid(row=0, column=1, padx=5, pady=5)
+
+        # Câblage des commandes APRÈS création de tous les widgets (évite le callback prématuré sur Linux)
+        self.option_type.configure(command=self._on_type_selected)
+        self.option_version.configure(command=self._on_version_selected)
 
         # Configurer les tags couleur après le premier rendu (évite segfault Linux pré-mainloop)
         self.after(100, self._configure_log_tags)
