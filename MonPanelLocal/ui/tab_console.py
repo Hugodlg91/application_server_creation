@@ -225,10 +225,10 @@ class TabConsole(ctk.CTkFrame):
     def update_install_state(self, is_installed):
         if is_installed:
             self.btn_install.grid_remove()
-            self.btn_start.grid(row=0, column=5, padx=(6, 4), pady=8)
+            self.btn_start.grid(row=0, column=5, padx=4, pady=8)
         else:
             self.btn_start.grid_remove()
-            self.btn_install.grid(row=0, column=5, padx=(6, 4), pady=8)
+            self.btn_install.grid(row=0, column=5, padx=4, pady=8)
 
     def show_progress(self, show=True):
         if show:

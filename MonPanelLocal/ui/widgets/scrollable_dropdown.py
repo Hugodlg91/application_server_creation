@@ -116,8 +116,12 @@ class ScrollableDropdown(ctk.CTkButton):
                 kwargs["state"] = "normal"
 
         # Intercepter "command" : stocker comme callback de sélection
+        # Guard : CTkButton.__init__ appelle configure(command=_open_popup)
+        # en interne → ne pas écraser le vrai callback avec _open_popup
         if "command" in kwargs:
-            self._command = kwargs.pop("command")
+            cmd = kwargs.pop("command")
+            if cmd is not self._open_popup:
+                self._command = cmd
 
         if kwargs:
             super().configure(**kwargs)

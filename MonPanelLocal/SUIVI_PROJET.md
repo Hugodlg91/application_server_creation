@@ -4,7 +4,14 @@ Ce document retrace l'historique de développement, les fonctionnalités ajouté
 
 ---
 
-## 🐛 Version 8.2 - Fix Layout Console + Settings (Actuelle)
+## 🐛 Version 8.2.1 - Fix pack/grid + ScrollableDropdown command (Actuelle)
+**Date :** 04 Mars 2026
+**Bug 1** (`ui/tab_console.py`) : `update_install_state()` utilisait encore `.pack()`/`.pack_forget()` après migration grid de v8.2 → TclError "window isn't packed". Correctif : `grid()`/`grid_remove()` sur col 5 avec `padx=4`.
+**Bug 2** (`ui/widgets/scrollable_dropdown.py`) : `CTkButton.__init__` appelle `self.configure(command=self._open_popup)` en interne → `ScrollableDropdown.configure()` écrasait `self._command` avec `_open_popup` → `TypeError` (1 arg attendu, 2 reçus) à la sélection. Correctif : guard `if cmd is not self._open_popup` dans `configure()`.
+
+---
+
+## 🐛 Version 8.2 - Fix Layout Console + Settings
 **Date :** 04 Mars 2026
 **Problème 1** (`ui/tab_console.py`) : `grp_server` (CTkFrame pack) s'étirait horizontalement → les boutons Installer/Démarrer disparaissaient hors de la zone visible.
 **Correctif** : Réécriture complète de `frame_controls` en grid (col 0→10). Suppression de `grp_server`. Seul col 7 (spacer) prend `weight=1`. `btn_install`/`btn_start` alternent via `.grid()`/`.grid_remove()` sur la même col 5. `entry_bore_ip` masquée via `.grid_remove()`, affichée via `.grid()` dans `set_bore_state()`.
