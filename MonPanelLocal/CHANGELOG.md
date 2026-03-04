@@ -1,6 +1,38 @@
-# MonPanelLocal - Changelog
+# EasyHost MC - Changelog
 
 Ce document retrace l'historique de développement, les fonctionnalités ajoutées et l'architecture du projet.
+
+---
+
+## Version 9.0 - Internationalisation FR/EN + Sélecteur de langue + Renommage EasyHost MC (Actuelle)
+**Date :** 05 Mars 2026
+
+### Système i18n
+- **`core/i18n.py`** (nouveau) : Dictionnaires `FR` et `EN` couvrant toutes les chaînes UI. Fonctions `set_lang(lang)`, `get_lang()`, `t(key)` (fallback = clé si absente). Variable globale `_LANG = "fr"`.
+- **Intégration dans tous les fichiers UI** : `from core.i18n import t` + remplacement de toutes les chaînes visibles par `t("clé")` dans `ui/tab_bar.py`, `ui/header_bar.py`, `ui/tab_console.py`, `ui/tab_players.py`, `ui/tab_plugins.py`, `ui/tab_settings.py`, `ui/main_window.py`, `main.py`.
+- Chaînes exclues : callbacks `on_log` (préfixes `[Système]`, `[Bore]`), couleurs, valeurs numériques, clés de config.
+
+### Sélecteur de langue
+- **`core/config_manager.py`** : `load_lang() -> str` (défaut `"fr"`) et `save_lang(lang)` — lecture/écriture de la clé `"lang"` dans `panel_config.json` sans écraser les autres clés.
+- **`ui/tab_settings.py`** : 4ème section **Langue** via `_make_section_card("settings.section_lang")`. `CTkOptionMenu` `["Français", "English"]` pré-sélectionné selon `i18n.get_lang()`. Au changement : `i18n.set_lang()` + `save_lang()` + message de redémarrage bilingue (FR/EN selon la langue choisie).
+- **`main.py`** : `i18n.set_lang(config_manager.load_lang())` appelé avant la création de `MainWindow` → tous les widgets sont construits dans la bonne langue dès le démarrage.
+
+### Difficulté et Gamemode en menus déroulants
+- **`ui/tab_settings.py`** (`_build_properties_section`) : `difficulty` et `gamemode` sortis du loop de `CTkEntry` vers des `CTkOptionMenu` dédiés (`self.dropdowns`).
+  - Difficulté : `["peaceful", "easy", "normal", "hard"]`
+  - Mode de jeu : `["survival", "creative", "adventure", "spectator"]`
+- `update_form` : appelle `.set()` sur les dropdowns avec validation (valeur ignorée si hors liste).
+- `_on_save_clicked` : fusionne `self.entries` + `self.dropdowns` avant écriture dans `server.properties`.
+
+### Renommage EasyHost MC
+- **`core/i18n.py`** : clés `header.title` et `app.title` → `"EasyHost MC"` (FR + EN).
+- **`ui/header_bar.py`** : Labels `"MonPanel"` + `" LOCAL"` fusionnés en `"EasyHost MC"`.
+- **`core/plugin_manager.py`** : User-Agent → `"EasyHostMC/1.0"`.
+- **`CHANGELOG.md`** : Titre mis à jour.
+
+### Améliorations ScrollableDropdown (menu version)
+- `▼` désormais rendu via un `CTkLabel` overlay positionné en `place(relx=1.0)` à droite du bouton — texte de version propre à gauche, indicateur à droite.
+- Hover synchronisé : `_on_hover(bool)` met à jour le `fg_color` du label `▼` en même temps que le bouton (`_col_normal` / `_col_hover`).
 
 ---
 
