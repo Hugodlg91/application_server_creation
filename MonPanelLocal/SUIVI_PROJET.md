@@ -4,7 +4,88 @@ Ce document retrace l'historique de développement, les fonctionnalités ajouté
 
 ---
 
-## ✨ Version 7.1 - Widget ScrollableDropdown Custom (Actuelle)
+## ✨ Version 8.1 - Améliorations Visuelles (Actuelle)
+**Date :** 04 Mars 2026
+**Objectif :** Polissage visuel approfondi de tous les onglets suite à la refonte v8.0.
+
+**`ui/tab_console.py`** (amélioré) :
+- Contrôles serveur regroupés dans `grp_server` (CTkFrame BG/BORDER avec séparateur vertical 1px)
+- `pill_state` = CTkFrame (RED_TINT/GREEN_TINT) contenant `lbl_state` → statut avec fond coloré
+- Ligne header console row=1 "◉ CONSOLE EN DIRECT" (● GREEN + texte MUTED bold)
+- `console_box` avec `border_color=BORDER, border_width=1, corner_radius=8`
+- Zone de commande avec préfixe "›" ACCENT taille 18
+- Renumérotation des rows : controls=0, hdr=1, progress=2, console=3 (weight), input=4
+
+**`ui/tab_players.py`** (amélioré) :
+- Avatars colorés par hash du nom du joueur (`AVATAR_PALETTE`, 8 couleurs), avec initiale en blanc
+- Badge compteur dynamique `pill_count` (vert = joueurs présents, grisé = serveur vide)
+- État vide illustré : 👥 grand + titre "Serveur vide" + sous-titre
+- Point vert `●` devant le nom de chaque joueur
+
+**`ui/tab_plugins.py`** (amélioré) :
+- État initial illustré : 🧩 grand + titre "Trouver des plugins" + description
+- État "aucun résultat" illustré : 🔍 + titre + hint avec le terme recherché
+- Icône loupe 🔍 dans la barre de recherche
+- Bouton "Recherche…" (texte + disabled) pendant la recherche
+- Compteur de téléchargements affiché sous la description
+
+**`ui/tab_settings.py`** (amélioré) :
+- `_make_section_card(title, icon="")` : badge ACCENT_TINT 22×22 avec icône emoji
+- Sections : ⚙ Paramètres du serveur, 🚀 Performances du serveur, 📢 Planificateur de messages
+- Police des labels → `ctk.CTkFont` (cohérence cross-platform)
+
+**`ui/header_bar.py`** (amélioré) :
+- Dot coloré `●` dans la pill serveur, couleur selon le type : PaperMC=vert, Vanilla=orange, Fabric=bleu (`TYPE_COLORS` dict)
+- `set_server_info` met à jour la couleur du dot
+- `update_status` : compte joueurs avec pluriel correct ("1 joueur" / "2 joueurs")
+
+---
+
+## 🐛 Version 8.0.3 - Fix Badge CTkLabel transparent (Précédente)
+**Date :** 04 Mars 2026
+**Cause :** `CTkLabel` interdit `text_color="transparent"` → `ValueError`. Le badge joueurs utilisait `transparent` pour se "cacher" visuellement.
+**Correctif** (`ui/tab_bar.py`) : Suppression de `text_color`/`fg_color` `"transparent"`. Badge créé avec les vraies couleurs (`fg_color=ACCENT`, `text_color="#ffffff"`). Caché via `.place_forget()` au démarrage (fin de `_place_badge()`). Affiché via `.place()` direct dans `update_badge()` quand `count > 0`, caché via `.place_forget()` quand `count == 0`.
+
+---
+
+## 🐛 Version 8.0.2 - Hotfix TabBar CTkLabel (Linux)
+**Date :** 04 Mars 2026
+**Cause racine définitive :** `CTkButton` appelle `canvas._configure()` dans son `__init__` avant mapping fenêtre WM sur Linux → segfault inévitable. `self.update()` insuffisant car le bug est dans le thread de rendu Tk, pas dans l'ordre Python.
+**Correctif** (`ui/tab_bar.py`) : Remplacement de tous les `CTkButton` de navigation par des `CTkLabel` + bindings `<Button-1>`/`<Enter>`/`<Leave>`. `CTkLabel` n'utilise pas de canvas → aucun segfault possible. Les IDs d'onglets passent maintenant en minuscules (`"console"`, `"joueurs"`, `"plugins"`, `"parametres"`), `_show_tab()` dans `main_window.py` mis à jour en conséquence.
+**Règle projet :** Dans tout widget instancié avant `mainloop()`, préférer `CTkLabel+bindings` à `CTkButton` pour les éléments purement navigationnels.
+
+---
+
+## 🐛 Version 8.0.1 - Hotfix TabBar Linux
+**Date :** 04 Mars 2026
+**Cause :** Stack trace : `CTkButton._draw()` → `tkinter._configure()` → segfault dans `ui/tab_bar.py`. Même bug que v7.0.3 : sur Linux, CTkButton tente de se dessiner avant que son frame parent soit mapped. Le `self.update()` de MainWindow ne propage pas aux frames enfants créés après.
+**Correctif** (`ui/tab_bar.py`) : Ajout de `self.update()` dans `TabBar.__init__` avant toute instanciation de CTkButton.
+Pattern à systématiser : tout widget CTk contenant des CTkButton/CTkSwitch doit appeler `self.update()` en début de `__init__` sur Linux.
+
+---
+
+## 🎨 Version 8.0 - Refonte UI Dashboard Pro
+**Date :** 04 Mars 2026
+**Objectif :** Refonte visuelle complète vers le thème "Dashboard Pro" (fond `#0f172a`, accents violet `#6366f1`/`#8b5cf6`, surfaces `#1e293b`).
+
+**Nouveaux fichiers :**
+- `ui/header_bar.py` — `HeaderBar(ctk.CTkFrame)` : logo ⛏, titre MonPanel LOCAL, pill serveur type·version, status pill ●En ligne/●Éteint, CPU + RAM barres de progression (ACCENT/ACCENT2). Méthodes : `update_status(is_running, player_count)`, `update_metrics(cpu, ram)`, `set_server_info(server_type, version)`.
+- `ui/tab_bar.py` — `TabBar(ctk.CTkFrame)` : 4 boutons (⌨ Console, 👥 Joueurs, 🧩 Plugins, ⚙ Paramètres) avec indicateur bas 2px ACCENT sur l'onglet actif. Badge numérique ACCENT sur Joueurs. Méthode `update_badge(count)`.
+
+**Architecture (`ui/main_window.py`) :** Suppression de `CTkTabview`. Nouveau layout grid : row 0 HeaderBar, row 1 TabBar, row 2 `frame_content` (weight=1). Les 4 onglets sont placés via `.place(relwidth=1, relheight=1)` et switchés par `.lift()`. `system_monitor` câblé sur `header_bar.update_metrics`. `on_players_update_callback` redirigé vers `_on_players_update` (met à jour tab_players + tab_bar badge + header status). `_action_version_change` appelle `header_bar.set_server_info`.
+
+**Onglets rethémés (aucun changement fonctionnel) :**
+- `ui/tab_console.py` : fond BG, barre contrôles SURFACE/BORDER, btn_start ACCENT, btn_stop RED_TINT, btn_bore BLUE_TINT, progress bar fine ACCENT h=4, console BG, lbl_state "● En ligne"/"● Éteint" GREEN/RED.
+- `ui/tab_players.py` : header card SURFACE, cartes joueur SURFACE avec avatar ACCENT_TINT 36x36, boutons Kick ORANGE_TINT, Ban RED_TINT.
+- `ui/tab_plugins.py` : barre recherche SURFACE, cartes plugin SURFACE avec icône ACCENT_TINT 42x42, progress bar ACCENT h=4.
+- `ui/tab_settings.py` : `_make_section_card()` → 3 sections SURFACE (Properties, Performances, Planificateur) avec titres uppercase SUB. Entrées fg=BG, boutons ACCENT.
+- `ui/widget_monitor.py` : layout horizontal, SURFACE/BORDER, barres ACCENT/ACCENT2.
+
+**`main.py` :** `ctk.set_default_color_theme("dark-blue")`, callback joueurs → `app._on_players_update`.
+
+---
+
+## ✨ Version 7.1 - Widget ScrollableDropdown Custom
 **Date :** 04 Mars 2026
 **Objectif :** Remplacer CTkComboBox par un widget custom réutilisable offrant un popup avec scroll natif.
 
@@ -17,13 +98,6 @@ Ce document retrace l'historique de développement, les fonctionnalités ajouté
 - API compatible : `get()`, `set()`, `configure(values=, state=, command=)` — `state="readonly"` → mappé `"normal"`
 
 **Modifications** `ui/tab_console.py` : import + remplacement de `CTkComboBox` par `ScrollableDropdown`. Toutes les méthodes existantes restent inchangées (API rétrocompatible).
-
----
-
-## ✨ Version 7.0.4 - Version Dropdown Scrollable
-**Date :** 04 Mars 2026
-**Problème :** `CTkOptionMenu` affichait toutes les versions sans scroll, inutilisable avec 20+ entrées.
-**Correctif** (`ui/tab_console.py`) : Remplacement de `CTkOptionMenu` par `CTkComboBox` (`state="readonly"`) pour `option_version`. Support natif du scroll molette dans le dropdown. Le callback `command=` est câblé directement dans le constructeur (CTkComboBox ne souffre pas du bug Linux de déclenchement prématuré). Tous les appels `configure(state="normal")` sur `option_version` remplacés par `state="readonly"` (tab_console.py `set_running_state`, main_window.py `_action_download` finalize).
 
 ---
 

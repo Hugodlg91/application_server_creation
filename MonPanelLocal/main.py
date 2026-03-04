@@ -18,7 +18,7 @@ from ui.main_window import MainWindow
 def main():
     # Définition du thème UI
     ctk.set_appearance_mode("Dark")
-    ctk.set_default_color_theme("blue")
+    ctk.set_default_color_theme("dark-blue")
     
     # 1. Initialisation des composants "Core" (Backend)
     server_manager = ServerManager()
@@ -38,7 +38,7 @@ def main():
         bore_manager=bore_manager
     )
     
-    server_manager.on_players_update_callback = lambda players: app.after(0, app.tab_players.update_player_list, players)
+    server_manager.on_players_update_callback = lambda players: app.after(0, app._on_players_update, players)
     
     # 3. Fonction pour gérer la fermeture propre
     def on_closing():

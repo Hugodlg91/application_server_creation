@@ -1,13 +1,29 @@
 import customtkinter as ctk
 from .widgets.scrollable_dropdown import ScrollableDropdown
 
+BG       = "#0f172a"
+SURFACE  = "#1e293b"
+BORDER   = "#334155"
+MUTED    = "#475569"
+TEXT     = "#e2e8f0"
+SUB      = "#94a3b8"
+ACCENT   = "#6366f1"
+ACCENT2  = "#8b5cf6"
+GREEN    = "#4ade80"
+RED      = "#ef4444"
+BLUE     = "#60a5fa"
+
+RED_TINT    = "#3d1a1a"
+RED_BORDER  = "#6b2d2d"
+BLUE_TINT   = "#111e3a"
+BLUE_BORDER = "#1e3560"
+GREEN_TINT  = "#0d2a1a"
+
+
 class TabConsole(ctk.CTkFrame):
-    """
-    Onglet contenant la console en direct et les contrôles du serveur pour la version choisie.
-    """
     def __init__(self, master, on_start, on_stop, on_send_command, on_download,
                  on_version_change, on_type_change, on_bore_toggle=None, **kwargs):
-        super().__init__(master, **kwargs)
+        super().__init__(master, fg_color=BG, **kwargs)
 
         self.on_start = on_start
         self.on_stop = on_stop
@@ -22,131 +38,193 @@ class TabConsole(ctk.CTkFrame):
         self._tags_ready = False
 
         self.grid_columnconfigure(0, weight=1)
-        self.grid_rowconfigure(2, weight=1)
+        self.grid_rowconfigure(3, weight=1)   # row 3 = console_box
 
-        # === Frame des contrôles haut ===
-        self.frame_controls = ctk.CTkFrame(self)
-        self.frame_controls.grid(row=0, column=0, padx=5, pady=5, sticky="ew")
+        # ── row 0 : Barre de contrôles ────────────────────────────────────────
+        self.frame_controls = ctk.CTkFrame(self, fg_color=SURFACE,
+                                           border_color=BORDER, border_width=1,
+                                           corner_radius=10)
+        self.frame_controls.grid(row=0, column=0, padx=8, pady=(8, 4), sticky="ew")
 
-        # Choix du type de serveur
-        self.lbl_type = ctk.CTkLabel(self.frame_controls, text="Type:")
-        self.lbl_type.pack(side="left", padx=(5,2), pady=5)
+        # Groupe gauche : sélection du serveur
+        grp_server = ctk.CTkFrame(self.frame_controls, fg_color=BG,
+                                  border_color=BORDER, border_width=1,
+                                  corner_radius=8)
+        grp_server.pack(side="left", padx=(10, 0), pady=8)
 
+        ctk.CTkLabel(grp_server, text="Type", text_color=SUB,
+                     font=ctk.CTkFont(size=11)).pack(side="left", padx=(10, 4))
         self.option_type = ctk.CTkOptionMenu(
-            self.frame_controls,
+            grp_server,
             values=["PaperMC", "Vanilla", "Fabric"],
-            width=110
-        )
-        self.option_type.pack(side="left", padx=(0,5), pady=5)
+            width=106, height=30,
+            fg_color=BG, button_color=ACCENT,
+            button_hover_color=ACCENT2, text_color=TEXT,
+            dropdown_fg_color=SURFACE, dropdown_text_color=TEXT,
+            dropdown_hover_color=BORDER)
+        self.option_type.pack(side="left", padx=(0, 6), pady=4)
 
-        # Choix de la version
-        self.lbl_version = ctk.CTkLabel(self.frame_controls, text="Version:")
-        self.lbl_version.pack(side="left", padx=(5,2), pady=5)
+        # Séparateur vertical
+        ctk.CTkFrame(grp_server, fg_color=BORDER, width=1).pack(
+            side="left", fill="y", pady=6)
 
+        ctk.CTkLabel(grp_server, text="Version", text_color=SUB,
+                     font=ctk.CTkFont(size=11)).pack(side="left", padx=(8, 4))
         self.option_version = ScrollableDropdown(
-            self.frame_controls,
+            grp_server,
             values=["Chargement..."],
-            width=120,
-            command=self._on_version_selected
-        )
-        self.option_version.pack(side="left", padx=(0,5), pady=5)
+            width=116, height=30,
+            fg_color=BG, text_color=TEXT,
+            hover_color=SURFACE,
+            command=self._on_version_selected)
+        self.option_version.pack(side="left", padx=(0, 10), pady=4)
 
-        # Bouton Installer
-        self.btn_install = ctk.CTkButton(self.frame_controls, text="Installer", fg_color="#1f538d", command=self._on_download_clicked)
-        self.btn_install.pack(side="left", padx=5, pady=5)
+        # Boutons action (milieu)
+        self.btn_install = ctk.CTkButton(
+            self.frame_controls, text="⬇  Installer", width=110,
+            fg_color=SURFACE, hover_color=BG,
+            border_color=BORDER, border_width=1,
+            text_color=SUB, height=32,
+            command=self._on_download_clicked)
+        self.btn_install.pack(side="left", padx=(8, 4), pady=8)
 
-        # Boutons Démarrer et Arrêter
-        self.btn_start = ctk.CTkButton(self.frame_controls, text="Démarrer", fg_color="green", hover_color="darkgreen", command=self._on_start_clicked)
-        self.btn_start.pack(side="left", padx=5, pady=5)
-        self.btn_start.pack_forget() # Caché par défaut si non installé
+        self.btn_start = ctk.CTkButton(
+            self.frame_controls, text="▶  Démarrer", width=120,
+            fg_color=ACCENT, hover_color=ACCENT2,
+            text_color=TEXT, height=32,
+            command=self._on_start_clicked)
+        self.btn_start.pack(side="left", padx=4, pady=8)
+        self.btn_start.pack_forget()
 
-        self.btn_stop = ctk.CTkButton(self.frame_controls, text="Arrêter", fg_color="red", hover_color="darkred", state="disabled", command=self._on_stop_clicked)
-        self.btn_stop.pack(side="left", padx=5, pady=5)
+        self.btn_stop = ctk.CTkButton(
+            self.frame_controls, text="■  Arrêter", width=110,
+            fg_color=RED_TINT, hover_color="#5a2020",
+            text_color=RED, border_color=RED_BORDER,
+            border_width=1, height=32, state="disabled",
+            command=self._on_stop_clicked)
+        self.btn_stop.pack(side="left", padx=4, pady=8)
 
-        # Status Label
-        self.lbl_state = ctk.CTkLabel(self.frame_controls, text="Statut: Éteint", text_color="gray")
-        self.lbl_state.pack(side="right", padx=10, pady=5)
+        # Groupe droite : bore + statut
+        self.btn_bore = ctk.CTkButton(
+            self.frame_controls, text="🌐  Public", width=100,
+            fg_color=BLUE_TINT, hover_color=SURFACE,
+            text_color=BLUE, border_color=BLUE_BORDER,
+            border_width=1, height=32,
+            command=self._on_bore_clicked)
+        self.btn_bore.pack(side="right", padx=(4, 10), pady=8)
 
-        # Bouton Bore et IP
-        self.btn_bore = ctk.CTkButton(self.frame_controls, text="🌐 Rendre Public (Bore)", fg_color="#1f538d", hover_color="#14375e", command=self._on_bore_clicked)
-        self.btn_bore.pack(side="right", padx=5, pady=5)
+        self.entry_bore_ip = ctk.CTkEntry(
+            self.frame_controls, width=160, state="readonly",
+            justify="center", fg_color=BG, border_color=BORDER,
+            text_color=BLUE, font=("Consolas", 11))
 
-        self.entry_bore_ip = ctk.CTkEntry(self.frame_controls, width=170, state="readonly", justify="center")
+        # Pill statut (côté droit)
+        self.pill_state = ctk.CTkFrame(self.frame_controls,
+                                       fg_color=RED_TINT, corner_radius=12)
+        self.pill_state.pack(side="right", padx=(4, 8), pady=8)
+        self.lbl_state = ctk.CTkLabel(
+            self.pill_state, text="● Éteint",
+            font=ctk.CTkFont(size=11, weight="bold"), text_color=RED)
+        self.lbl_state.pack(padx=12, pady=5)
 
-        # === ProgressBar (Barre de téléchargement) ===
-        self.progress_bar = ctk.CTkProgressBar(self)
+        # ── row 1 : Header console ────────────────────────────────────────────
+        hdr_console = ctk.CTkFrame(self, fg_color="transparent")
+        hdr_console.grid(row=1, column=0, padx=12, pady=(2, 0), sticky="ew")
+        ctk.CTkLabel(hdr_console, text="◉", font=ctk.CTkFont(size=11),
+                     text_color=GREEN).pack(side="left", padx=(0, 6))
+        ctk.CTkLabel(hdr_console, text="CONSOLE EN DIRECT",
+                     font=ctk.CTkFont(size=10, weight="bold"),
+                     text_color=MUTED).pack(side="left")
+
+        # ── row 2 : Barre de progression (cachée par défaut) ──────────────────
+        self.progress_bar = ctk.CTkProgressBar(
+            self, height=4, corner_radius=0, border_width=0,
+            progress_color=ACCENT, fg_color=BORDER)
         self.progress_bar.set(0)
-        self.progress_bar.grid_remove() # Caché par défaut
+        self.progress_bar.grid_remove()
 
-        # === Textbox pour la console ===
-        self.console_box = ctk.CTkTextbox(self, state="disabled", font=("Consolas", 12))
-        self.console_box.grid(row=2, column=0, padx=5, pady=5, sticky="nsew")
+        # ── row 3 : Console textbox ───────────────────────────────────────────
+        self.console_box = ctk.CTkTextbox(
+            self, state="disabled",
+            font=("Consolas", 12),
+            fg_color=BG, text_color=TEXT,
+            border_color=BORDER, border_width=1,
+            corner_radius=8)
+        self.console_box.grid(row=3, column=0, padx=8, pady=(4, 4), sticky="nsew")
 
-        # === Frame pour l'envoi de commandes (bas) ===
-        self.frame_input = ctk.CTkFrame(self)
-        self.frame_input.grid(row=3, column=0, padx=5, pady=5, sticky="ew")
-        self.frame_input.grid_columnconfigure(0, weight=1)
+        # ── row 4 : Zone de commande ──────────────────────────────────────────
+        self.frame_input = ctk.CTkFrame(self, fg_color=SURFACE,
+                                        border_color=BORDER, border_width=1,
+                                        corner_radius=10)
+        self.frame_input.grid(row=4, column=0, padx=8, pady=(0, 8), sticky="ew")
+        self.frame_input.grid_columnconfigure(1, weight=1)
 
-        self.entry_cmd = ctk.CTkEntry(self.frame_input, placeholder_text="Entrez une commande (ex: say Hello)")
-        self.entry_cmd.grid(row=0, column=0, padx=(5, 0), pady=5, sticky="ew")
+        ctk.CTkLabel(self.frame_input, text="›", font=ctk.CTkFont(size=18),
+                     text_color=ACCENT, width=24).grid(row=0, column=0, padx=(10, 0))
+
+        self.entry_cmd = ctk.CTkEntry(
+            self.frame_input,
+            placeholder_text="Entrez une commande…",
+            fg_color=BG, border_color=BORDER,
+            text_color=TEXT, placeholder_text_color=MUTED,
+            border_width=1)
+        self.entry_cmd.grid(row=0, column=1, padx=(4, 4), pady=8, sticky="ew")
         self.entry_cmd.bind("<Return>", self._on_send_clicked)
-        self.entry_cmd.bind("<Up>", self._on_history_up)
-        self.entry_cmd.bind("<Down>", self._on_history_down)
+        self.entry_cmd.bind("<Up>",     self._on_history_up)
+        self.entry_cmd.bind("<Down>",   self._on_history_down)
 
-        self.btn_send = ctk.CTkButton(self.frame_input, text="Envoyer", command=self._on_send_clicked, state="disabled")
-        self.btn_send.grid(row=0, column=1, padx=5, pady=5)
+        self.btn_send = ctk.CTkButton(
+            self.frame_input, text="Envoyer", width=90,
+            fg_color=ACCENT, hover_color=ACCENT2,
+            command=self._on_send_clicked, state="disabled")
+        self.btn_send.grid(row=0, column=2, padx=(0, 8), pady=8)
 
-        # Câblage du type APRÈS création de tous les widgets (évite le callback prématuré sur Linux)
+        # Câblage différé (évite le callback prématuré sur Linux)
         self.option_type.configure(command=self._on_type_selected)
-
-        # Configurer les tags couleur après le premier rendu (évite segfault Linux pré-mainloop)
         self.after(100, self._configure_log_tags)
 
+    # ── Tags console ──────────────────────────────────────────────────────────
+
     def _configure_log_tags(self):
-        """Configure les tags de couleur sur le widget Text interne, après le démarrage de mainloop."""
-        self.console_box._textbox.tag_configure("error", foreground="#f87171")
-        self.console_box._textbox.tag_configure("warn", foreground="#fbbf24")
-        self.console_box._textbox.tag_configure("system", foreground="#93c5fd")
-        self.console_box._textbox.tag_configure("default", foreground="#e2e8f0")
+        self.console_box._textbox.tag_configure("error",   foreground="#f87171")
+        self.console_box._textbox.tag_configure("warn",    foreground="#fbbf24")
+        self.console_box._textbox.tag_configure("system",  foreground="#93c5fd")
+        self.console_box._textbox.tag_configure("default", foreground="#cbd5e1")
         self._tags_ready = True
 
+    # ── API publique ──────────────────────────────────────────────────────────
+
     def set_versions(self, versions):
-        """Remplit le menu déroulant avec les versions récupérées."""
         if versions:
             self.option_version.configure(values=versions)
             self.option_version.set(versions[0])
-            self.on_version_change(versions[0]) # Déclencher la sélection au lancement
+            self.on_version_change(versions[0])
         else:
             self.option_version.configure(values=["Erreur API"])
             self.option_version.set("Erreur API")
             self.btn_install.configure(state="disabled")
 
-    def _on_version_selected(self, value):
-        self.on_version_change(value)
-
-    def _on_type_selected(self, value):
-        self.on_type_change(value)
-
     def set_loading_state(self, loading: bool):
-        """Désactive les contrôles pendant le chargement des versions."""
-        self.option_type.configure(state="disabled" if loading else "normal")
-        self.option_version.configure(state="disabled" if loading else "readonly")
+        state = "disabled" if loading else "normal"
+        self.option_type.configure(state=state)
+        self.option_version.configure(state=state)
         if loading:
             self.option_version.configure(values=["Chargement..."])
             self.option_version.set("Chargement...")
 
     def update_install_state(self, is_installed):
-        """Affiche Installer ou Démarrer selon si la version est déjà téléchargée."""
         if is_installed:
             self.btn_install.pack_forget()
-            self.btn_start.pack(side="left", padx=5, pady=5, after=self.option_version)
+            self.btn_start.pack(side="left", padx=4, pady=8,
+                                after=self.btn_install)
         else:
             self.btn_start.pack_forget()
-            self.btn_install.pack(side="left", padx=5, pady=5, after=self.option_version)
+            self.btn_install.pack(side="left", padx=(8, 4), pady=8,
+                                  after=self.option_version)
 
     def show_progress(self, show=True):
         if show:
-            self.progress_bar.grid(row=1, column=0, padx=5, pady=(0, 5), sticky="ew")
+            self.progress_bar.grid(row=2, column=0, padx=0, pady=0, sticky="ew")
             self.progress_bar.set(0)
         else:
             self.progress_bar.grid_remove()
@@ -170,33 +248,48 @@ class TabConsole(ctk.CTkFrame):
         self.console_box.see("end")
 
     def set_running_state(self, is_running):
-        """Désactive la sélection pendant que le serveur tourne."""
         if is_running:
             self.option_version.configure(state="disabled")
             self.btn_start.configure(state="disabled")
             self.btn_stop.configure(state="normal")
             self.btn_send.configure(state="normal")
-            self.lbl_state.configure(text="Statut: En Ligne", text_color="green")
+            self.pill_state.configure(fg_color=GREEN_TINT)
+            self.lbl_state.configure(text="● En ligne", text_color=GREEN)
         else:
-            self.option_version.configure(state="readonly")
+            self.option_version.configure(state="normal")
             self.btn_start.configure(state="normal")
             self.btn_stop.configure(state="disabled")
             self.btn_send.configure(state="disabled")
-            self.lbl_state.configure(text="Statut: Éteint", text_color="red")
+            self.pill_state.configure(fg_color=RED_TINT)
+            self.lbl_state.configure(text="● Éteint", text_color=RED)
 
     def set_bore_state(self, is_running, ip=""):
-        """Met à jour l'apparence du bouton Bore et affiche l'IP."""
         if is_running:
-            self.btn_bore.configure(text="🔴 Désactiver le tunnel", fg_color="red", hover_color="darkred")
+            self.btn_bore.configure(
+                text="✕  Tunnel actif",
+                fg_color=RED_TINT, hover_color="#5a2020",
+                text_color=RED, border_color=RED_BORDER)
             if ip:
-                self.entry_bore_ip.pack(side="right", padx=5, pady=5, before=self.btn_bore)
+                self.entry_bore_ip.pack(side="right", padx=4, pady=8,
+                                        before=self.btn_bore)
                 self.entry_bore_ip.configure(state="normal")
                 self.entry_bore_ip.delete(0, "end")
                 self.entry_bore_ip.insert(0, ip)
                 self.entry_bore_ip.configure(state="readonly")
         else:
-            self.btn_bore.configure(text="🌐 Rendre Public (Bore)", fg_color="#1f538d", hover_color="#14375e")
+            self.btn_bore.configure(
+                text="🌐  Public", fg_color=BLUE_TINT,
+                hover_color=SURFACE, text_color=BLUE,
+                border_color=BLUE_BORDER)
             self.entry_bore_ip.pack_forget()
+
+    # ── Handlers ──────────────────────────────────────────────────────────────
+
+    def _on_version_selected(self, value):
+        self.on_version_change(value)
+
+    def _on_type_selected(self, value):
+        self.on_type_change(value)
 
     def _on_start_clicked(self):
         self.on_start()
