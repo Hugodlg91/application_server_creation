@@ -40,60 +40,62 @@ class TabConsole(ctk.CTkFrame):
         # ── Barre de contrôles (top) ──────────────────────────────────────────
         self.frame_controls = ctk.CTkFrame(self, fg_color=SURFACE,
                                            border_color=BORDER, border_width=1,
-                                           corner_radius=10)
-        self.frame_controls.pack(side="top", fill="x", padx=8, pady=(8, 4))
+                                           corner_radius=10, height=42)
+        self.frame_controls.pack(side="top", fill="x", padx=8, pady=(4, 2))
+        self.frame_controls.grid_propagate(False)
+        self.frame_controls.grid_rowconfigure(0, weight=1)
         self.frame_controls.grid_columnconfigure(7, weight=1)  # spacer
 
         # col 0 : label Type
         ctk.CTkLabel(self.frame_controls, text="Type", text_color=SUB,
                      font=ctk.CTkFont(size=11)
-                     ).grid(row=0, column=0, padx=(12, 4), pady=8)
+                     ).grid(row=0, column=0, padx=(12, 4), pady=0)
 
         # col 1 : option_type
         self.option_type = ctk.CTkOptionMenu(
             self.frame_controls,
             values=["PaperMC", "Vanilla", "Fabric"],
-            width=106, height=30,
+            width=106, height=28,
             fg_color=BG, button_color=ACCENT,
             button_hover_color=ACCENT2, text_color=TEXT,
             dropdown_fg_color=SURFACE, dropdown_text_color=TEXT,
             dropdown_hover_color=BORDER)
-        self.option_type.grid(row=0, column=1, padx=(0, 4), pady=8)
+        self.option_type.grid(row=0, column=1, padx=(0, 4), pady=0)
 
         # col 2 : séparateur vertical
         ctk.CTkFrame(self.frame_controls, fg_color=BORDER, width=1
-                     ).grid(row=0, column=2, padx=4, pady=10, sticky="ns")
+                     ).grid(row=0, column=2, padx=4, pady=4, sticky="ns")
 
         # col 3 : label Version
         ctk.CTkLabel(self.frame_controls, text="Version", text_color=SUB,
                      font=ctk.CTkFont(size=11)
-                     ).grid(row=0, column=3, padx=(4, 4), pady=8)
+                     ).grid(row=0, column=3, padx=(4, 4), pady=0)
 
         # col 4 : option_version
         self.option_version = ScrollableDropdown(
             self.frame_controls,
             values=["Chargement..."],
-            width=116, height=30,
+            width=116, height=28,
             fg_color=BG, text_color=TEXT,
             hover_color=SURFACE,
             command=self._on_version_selected)
-        self.option_version.grid(row=0, column=4, padx=(0, 6), pady=8)
+        self.option_version.grid(row=0, column=4, padx=(0, 6), pady=0)
 
         # col 5 : btn_install / btn_start (alternent sur la même cellule)
         self.btn_install = ctk.CTkButton(
             self.frame_controls, text="↓  Installer", width=110,
             fg_color=SURFACE, hover_color=BG,
             border_color=BORDER, border_width=1,
-            text_color=SUB, height=32,
+            text_color=SUB, height=28,
             command=self._on_download_clicked)
-        self.btn_install.grid(row=0, column=5, padx=(6, 4), pady=8)
+        self.btn_install.grid(row=0, column=5, padx=(6, 4), pady=0)
 
         self.btn_start = ctk.CTkButton(
             self.frame_controls, text="▶  Démarrer", width=120,
             fg_color=ACCENT, hover_color=ACCENT2,
-            text_color=TEXT, height=32,
+            text_color=TEXT, height=28,
             command=self._on_start_clicked)
-        self.btn_start.grid(row=0, column=5, padx=(6, 4), pady=8)
+        self.btn_start.grid(row=0, column=5, padx=(6, 4), pady=0)
         self.btn_start.grid_remove()
 
         # col 6 : btn_stop
@@ -101,27 +103,27 @@ class TabConsole(ctk.CTkFrame):
             self.frame_controls, text="■  Arrêter", width=110,
             fg_color=RED_TINT, hover_color="#5a2020",
             text_color=RED, border_color=RED_BORDER,
-            border_width=1, height=32, state="disabled",
+            border_width=1, height=28, state="disabled",
             command=self._on_stop_clicked)
-        self.btn_stop.grid(row=0, column=6, padx=4, pady=8)
+        self.btn_stop.grid(row=0, column=6, padx=4, pady=0)
 
         # col 7 : spacer (weight=1, vide)
 
         # col 8 : pill_state
         self.pill_state = ctk.CTkFrame(self.frame_controls,
                                        fg_color=RED_TINT, corner_radius=12)
-        self.pill_state.grid(row=0, column=8, padx=(4, 6), pady=8)
+        self.pill_state.grid(row=0, column=8, padx=(4, 6), pady=0)
         self.lbl_state = ctk.CTkLabel(
             self.pill_state, text="● Éteint",
             font=ctk.CTkFont(size=11, weight="bold"), text_color=RED)
-        self.lbl_state.pack(padx=12, pady=5)
+        self.lbl_state.pack(padx=10, pady=0)
 
         # col 9 : entry_bore_ip (masquée par défaut)
         self.entry_bore_ip = ctk.CTkEntry(
             self.frame_controls, width=160, state="readonly",
             justify="center", fg_color=BG, border_color=BORDER,
             text_color=BLUE, font=("Consolas", 11))
-        self.entry_bore_ip.grid(row=0, column=9, padx=4, pady=8)
+        self.entry_bore_ip.grid(row=0, column=9, padx=4, pady=0)
         self.entry_bore_ip.grid_remove()
 
         # col 10 : btn_bore
@@ -129,9 +131,9 @@ class TabConsole(ctk.CTkFrame):
             self.frame_controls, text="Public", width=90,
             fg_color=BLUE_TINT, hover_color=SURFACE,
             text_color=BLUE, border_color=BLUE_BORDER,
-            border_width=1, height=32,
+            border_width=1, height=28,
             command=self._on_bore_clicked)
-        self.btn_bore.grid(row=0, column=10, padx=(4, 10), pady=8)
+        self.btn_bore.grid(row=0, column=10, padx=(4, 10), pady=0)
 
         # ── Header console ────────────────────────────────────────────────────
         hdr_console = ctk.CTkFrame(self, fg_color="transparent")

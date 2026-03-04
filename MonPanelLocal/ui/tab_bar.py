@@ -102,7 +102,7 @@ class TabBar(ctk.CTkFrame):
             is_active = (tab_id == self.active_tab)
             lbl.configure(
                 text_color=TEXT if is_active else MUTED,
-                fg_color=SURFACE if is_active else "transparent"
+                fg_color="transparent"
             )
             self._indicators[tab_id].configure(
                 fg_color=ACCENT if is_active else "transparent")
