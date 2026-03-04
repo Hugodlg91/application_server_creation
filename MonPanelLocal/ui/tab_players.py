@@ -19,7 +19,7 @@ class TabPlayers(ctk.CTkFrame):
         self.lbl_title = ctk.CTkLabel(self.frame_top, text="Joueurs Connectés", font=("Arial", 16, "bold"))
         self.lbl_title.grid(row=0, column=0)
         
-        self.btn_refresh = ctk.CTkButton(self.frame_top, text="🔄 Actualiser", width=100, command=self._on_refresh_clicked)
+        self.btn_refresh = ctk.CTkButton(self.frame_top, text="Actualiser", width=100, command=self._on_refresh_clicked)
         self.btn_refresh.grid(row=0, column=1, padx=10, sticky="e")
         
         # Liste

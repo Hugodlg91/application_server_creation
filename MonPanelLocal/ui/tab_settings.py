@@ -1,4 +1,3 @@
-import tkinter as tk
 import customtkinter as ctk
 
 class TabSettings(ctk.CTkFrame):
@@ -14,25 +13,10 @@ class TabSettings(ctk.CTkFrame):
         self.on_start_scheduler = on_start_scheduler
         self.on_stop_scheduler = on_stop_scheduler
 
-        # Scrollable container : Canvas natif + scroll_container enfant de SELF
-        # (CTkFrame(canvas) crashe sur Linux car CustomTkinter ne peut pas remonter
-        # la chaîne parente jusqu'à un widget CTk pour la gestion des couleurs)
-        bg = "#2b2b2b" if ctk.get_appearance_mode() == "Dark" else "#ebebeb"
-        self._canvas = tk.Canvas(self, highlightthickness=0, bd=0, bg=bg)
-        self._scrollbar = ctk.CTkScrollbar(self, orientation="vertical", command=self._canvas.yview)
-        self._canvas.configure(yscrollcommand=self._scrollbar.set)
-        self._scrollbar.pack(side="right", fill="y")
-        self._canvas.pack(side="left", fill="both", expand=True)
-
-        # scroll_container est enfant de SELF (chaîne CTk intacte), affiché via le canvas
-        self.scroll_container = ctk.CTkFrame(self)
-        self._canvas_window = self._canvas.create_window((0, 0), window=self.scroll_container, anchor="nw")
-
-        self.scroll_container.bind("<Configure>", lambda e: self._canvas.configure(scrollregion=self._canvas.bbox("all")))
-        self._canvas.bind("<Configure>", lambda e: self._canvas.itemconfig(self._canvas_window, width=e.width))
-        self._canvas.bind("<Button-4>", lambda e: self._canvas.yview_scroll(-1, "units"))
-        self._canvas.bind("<Button-5>", lambda e: self._canvas.yview_scroll(1, "units"))
-
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+        self.scroll_container = ctk.CTkScrollableFrame(self)
+        self.scroll_container.grid(row=0, column=0, sticky="nsew")
         self.scroll_container.grid_columnconfigure(1, weight=1)
 
         self.lbl_title = ctk.CTkLabel(self.scroll_container, text="Paramètres du Serveur (server.properties)", font=("Arial", 16, "bold"))
@@ -46,8 +30,6 @@ class TabSettings(ctk.CTkFrame):
             "difficulty": "Difficulté (peaceful, easy, normal, hard)",
             "gamemode": "Mode de jeu (survival, creative, adventure)"
         }
-
-        self.status_lbl_row = len(self.properties_to_show) + 2
 
         self.row_idx = 1
         for key, label_text in self.properties_to_show.items():
@@ -130,16 +112,6 @@ class TabSettings(ctk.CTkFrame):
             self.switch_aikar.select()
         else:
             self.switch_aikar.deselect()
-
-        # Propager le scroll souris à tous les widgets enfants (Linux)
-        self.after(0, lambda: self._bind_scroll_recursive(self.scroll_container))
-
-    def _bind_scroll_recursive(self, widget):
-        """Propage les événements de scroll souris à tous les widgets enfants."""
-        widget.bind("<Button-4>", lambda e: self._canvas.yview_scroll(-1, "units"))
-        widget.bind("<Button-5>", lambda e: self._canvas.yview_scroll(1, "units"))
-        for child in widget.winfo_children():
-            self._bind_scroll_recursive(child)
 
     def update_form(self, current_config):
         """Met à jour les champs du formulaire avec la nouvelle config."""
