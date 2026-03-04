@@ -91,17 +91,14 @@ class TabSettings(ctk.CTkFrame):
     def _build_properties_section(self):
         card = self._make_section_card("settings.section_server")
 
+        # ── Champs texte libres ───────────────────────────────────────────────
         self.entries = {}
-        # (config key → i18n key)
-        properties = {
+        text_fields = {
             "server-port":  "settings.port",
             "max-players":  "settings.max_players",
             "motd":         "settings.motd",
-            "difficulty":   "settings.difficulty",
-            "gamemode":     "settings.gamemode",
         }
-
-        for row_i, (key, i18n_key) in enumerate(properties.items(), start=1):
+        for row_i, (key, i18n_key) in enumerate(text_fields.items(), start=1):
             ctk.CTkLabel(card, text=t(i18n_key), text_color=SUB,
                          font=ctk.CTkFont(size=12), width=210, anchor="w"
                          ).grid(row=row_i, column=0, padx=(14, 6),
@@ -111,8 +108,43 @@ class TabSettings(ctk.CTkFrame):
             entry.grid(row=row_i, column=1, padx=(0, 14), pady=5, sticky="ew")
             self.entries[key] = entry
 
+        # ── Menus déroulants ──────────────────────────────────────────────────
+        self.dropdowns = {}
+
+        # Difficulté
+        row_diff = len(text_fields) + 1
+        ctk.CTkLabel(card, text=t("settings.difficulty"), text_color=SUB,
+                     font=ctk.CTkFont(size=12), width=210, anchor="w"
+                     ).grid(row=row_diff, column=0, padx=(14, 6), pady=5, sticky="w")
+        opt_diff = ctk.CTkOptionMenu(
+            card,
+            values=["peaceful", "easy", "normal", "hard"],
+            fg_color=BG, button_color=ACCENT,
+            button_hover_color=ACCENT2, text_color=TEXT,
+            dropdown_fg_color=SURFACE, dropdown_text_color=TEXT,
+            dropdown_hover_color=BORDER)
+        opt_diff.set("normal")
+        opt_diff.grid(row=row_diff, column=1, padx=(0, 14), pady=5, sticky="w")
+        self.dropdowns["difficulty"] = opt_diff
+
+        # Mode de jeu
+        row_gm = row_diff + 1
+        ctk.CTkLabel(card, text=t("settings.gamemode"), text_color=SUB,
+                     font=ctk.CTkFont(size=12), width=210, anchor="w"
+                     ).grid(row=row_gm, column=0, padx=(14, 6), pady=5, sticky="w")
+        opt_gm = ctk.CTkOptionMenu(
+            card,
+            values=["survival", "creative", "adventure", "spectator"],
+            fg_color=BG, button_color=ACCENT,
+            button_hover_color=ACCENT2, text_color=TEXT,
+            dropdown_fg_color=SURFACE, dropdown_text_color=TEXT,
+            dropdown_hover_color=BORDER)
+        opt_gm.set("survival")
+        opt_gm.grid(row=row_gm, column=1, padx=(0, 14), pady=5, sticky="w")
+        self.dropdowns["gamemode"] = opt_gm
+
         # Bouton + statut
-        row_save = len(properties) + 1
+        row_save = row_gm + 1
         self.btn_save = ctk.CTkButton(
             card, text=t("settings.save"),
             fg_color=ACCENT, hover_color=ACCENT2,
@@ -250,16 +282,30 @@ class TabSettings(ctk.CTkFrame):
     # ── API publique ─────────────────────────────────────────────────────────
 
     def update_form(self, current_config):
+        # Champs texte
         for key, entry in self.entries.items():
             entry.delete(0, "end")
             if key in current_config:
                 entry.insert(0, current_config[key])
+        # Menus déroulants (difficulty / gamemode)
+        valid = {
+            "difficulty": ["peaceful", "easy", "normal", "hard"],
+            "gamemode":   ["survival", "creative", "adventure", "spectator"],
+        }
+        for key, opt in self.dropdowns.items():
+            if key in current_config:
+                val = current_config[key]
+                if val in valid.get(key, []):
+                    opt.set(val)
 
     # ── Handlers ─────────────────────────────────────────────────────────────
 
     def _on_save_clicked(self):
         new_config = {k: e.get().strip()
                       for k, e in self.entries.items() if e.get().strip()}
+        # Ajouter les valeurs des menus déroulants
+        for key, opt in self.dropdowns.items():
+            new_config[key] = opt.get()
         success = self.on_save_callback(new_config)
         if success:
             self.lbl_status.configure(text=t("settings.saved_ok"), text_color=GREEN)

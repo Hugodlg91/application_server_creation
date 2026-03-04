@@ -50,11 +50,8 @@ class HeaderBar(ctk.CTkFrame):
         # Titre
         frame_title = ctk.CTkFrame(frame_left, fg_color="transparent")
         frame_title.pack(side="left", padx=(0, 14))
-        ctk.CTkLabel(frame_title, text="MonPanel",
+        ctk.CTkLabel(frame_title, text="EasyHost MC",
                      font=ctk.CTkFont(size=14, weight="bold"), text_color=TEXT
-                     ).pack(side="left")
-        ctk.CTkLabel(frame_title, text=" LOCAL",
-                     font=ctk.CTkFont(size=11, weight="bold"), text_color=ACCENT
                      ).pack(side="left")
 
         # Pill serveur (● type · version)

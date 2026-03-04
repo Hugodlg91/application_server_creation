@@ -1,4 +1,4 @@
-# MonPanelLocal/core/i18n.py
+# EasyHost MC — core/i18n.py
 # Système de traduction FR / EN
 # Usage : from core.i18n import t, set_lang, get_lang
 
@@ -91,13 +91,13 @@ FR: dict[str, str] = {
     "tabs.settings":                   "Paramètres",
 
     # ── header_bar.py ────────────────────────────────────────────────────────
-    "header.title":                    "MonPanelLocal",
+    "header.title":                    "EasyHost MC",
     "header.subtitle":                 "Panneau de gestion de serveur Minecraft",
     "header.offline":                  "Hors ligne",
     "header.online":                   "En ligne",
 
     # ── main_window.py / main.py ─────────────────────────────────────────────
-    "app.title":                       "MonPanelLocal",
+    "app.title":                       "EasyHost MC",
     "app.closing_title":               "Fermeture",
     "app.closing_log":                 "Fermeture de l'application…",
     "app.install_done":                "Installation terminée avec succès.",
@@ -195,13 +195,13 @@ EN: dict[str, str] = {
     "tabs.settings":                   "Settings",
 
     # ── header_bar.py ────────────────────────────────────────────────────────
-    "header.title":                    "MonPanelLocal",
+    "header.title":                    "EasyHost MC",
     "header.subtitle":                 "Minecraft server management panel",
     "header.offline":                  "Offline",
     "header.online":                   "Online",
 
     # ── main_window.py / main.py ─────────────────────────────────────────────
-    "app.title":                       "MonPanelLocal",
+    "app.title":                       "EasyHost MC",
     "app.closing_title":               "Closing",
     "app.closing_log":                 "Closing application…",
     "app.install_done":                "Installation completed successfully.",

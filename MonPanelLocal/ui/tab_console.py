@@ -76,7 +76,7 @@ class TabConsole(ctk.CTkFrame):
         self.option_version = ScrollableDropdown(
             self.frame_controls,
             values=[t("console.loading")],
-            width=116, height=28,
+            width=130, height=28,
             fg_color=BG, text_color=TEXT,
             hover_color=SURFACE,
             command=self._on_version_selected)

@@ -5,7 +5,7 @@ import threading
 class PluginManager:
     def __init__(self):
         self.base_url = "https://api.modrinth.com/v2"
-        self.headers = {"User-Agent": "MonPanelLocal/1.0 (contact@example.com)"}
+        self.headers = {"User-Agent": "EasyHostMC/1.0 (contact@example.com)"}
 
     def search_plugins(self, query, callback_success, callback_error):
         def _search():
