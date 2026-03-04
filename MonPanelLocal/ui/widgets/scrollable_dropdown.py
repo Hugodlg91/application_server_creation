@@ -12,12 +12,11 @@ class ScrollableDropdown(ctk.CTkButton):
 
     def __init__(self, master, values, command=None, width=120, **kwargs):
         self._values = list(values)
-        self._command = command
+        self._on_select = command   # nom distinct de CTkButton._command
         self._current_value = self._values[0] if self._values else ""
         self._popup = None
         self._disabled = False
 
-        # NE PAS passer command au super — on câble _open_popup à la place
         super().__init__(
             master,
             text=f"{self._current_value} ▼",
@@ -87,8 +86,8 @@ class ScrollableDropdown(ctk.CTkButton):
         self._current_value = value
         super().configure(text=f"{value} ▼")
         self._close_popup()
-        if self._command:
-            self._command(value)
+        if self._on_select:
+            self._on_select(value)
 
     # ──────────────────────────────────────────────
     # API publique (compatible CTkComboBox / CTkOptionMenu)
@@ -102,26 +101,19 @@ class ScrollableDropdown(ctk.CTkButton):
         super().configure(text=f"{value} ▼")
 
     def configure(self, **kwargs):
-        # Intercepter "values" : mise à jour de la liste interne
         if "values" in kwargs:
             self._values = list(kwargs.pop("values"))
             if self._popup and self._popup.winfo_exists():
                 self._close_popup()
 
-        # Intercepter "state" : mapper "readonly" → "normal" pour CTkButton
         if "state" in kwargs:
             state = kwargs["state"]
             self._disabled = (state == "disabled")
             if state == "readonly":
                 kwargs["state"] = "normal"
 
-        # Intercepter "command" : stocker comme callback de sélection
-        # Guard : CTkButton.__init__ appelle configure(command=_open_popup)
-        # en interne → ne pas écraser le vrai callback avec _open_popup
         if "command" in kwargs:
-            cmd = kwargs.pop("command")
-            if cmd is not self._open_popup:
-                self._command = cmd
+            self._on_select = kwargs.pop("command")
 
         if kwargs:
             super().configure(**kwargs)
