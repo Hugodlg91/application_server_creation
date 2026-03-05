@@ -4,6 +4,7 @@ import tarfile
 import zipfile
 import platform
 import shutil
+from core.i18n import t
 
 class JavaManager:
     """
@@ -86,8 +87,9 @@ class JavaManager:
             return True
 
         # Si introuvable, il faut le télécharger
+        JAVA = t("sys.prefix_java")
         if on_log_callback:
-            on_log_callback(f"[Java] Téléchargement du JRE (Java {java_version}) requis...")
+            on_log_callback(f"{JAVA} {t('sys.java_dl_required').format(ver=java_version)}")
 
         os_name, arch = self._get_os_and_arch_for_adoptium()
         asset_url = f"https://api.adoptium.net/v3/binary/latest/{java_version}/ga/{os_name}/{arch}/jre/hotspot/normal/eclipse"
@@ -106,7 +108,7 @@ class JavaManager:
                         f.write(chunk)
             
             if on_log_callback:
-                on_log_callback(f"[Java] Extraction du JRE en cours...")
+                on_log_callback(f"{JAVA} {t('sys.java_extracting')}")
 
             # 2. Extraction
             os.makedirs(target_dir, exist_ok=True)
@@ -127,12 +129,12 @@ class JavaManager:
                     os.chmod(exe_path, 0o755)
 
             if on_log_callback:
-                on_log_callback(f"[Java] Runtime installé avec succès ! ({target_dir})")
+                on_log_callback(f"{JAVA} {t('sys.java_runtime_ok').format(dir=target_dir)}")
             return True
-            
+
         except Exception as e:
             if on_log_callback:
-                on_log_callback(f"[Java] Erreur lors de l'acquisition du JRE {java_version} : {e}")
+                on_log_callback(f"{JAVA} {t('sys.java_dl_error').format(ver=java_version, err=e)}")
             # Nettoyage en cas de fail
             if os.path.exists(archive_path):
                 try: os.remove(archive_path)

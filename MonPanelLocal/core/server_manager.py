@@ -4,6 +4,7 @@ import threading
 import re
 import time
 from .java_manager import JavaManager
+from core.i18n import t
 
 class ServerManager:
     """
@@ -67,40 +68,48 @@ class ServerManager:
         if not self.eula_path: return
         os.makedirs(self.server_dir, exist_ok=True)
         if not os.path.exists(self.eula_path):
+            SYS = t("sys.prefix_system")
+            ERR = t("sys.prefix_error")
             try:
                 with open(self.eula_path, "w", encoding="utf-8") as f:
                     f.write("eula=true\n")
-                self._notify_log("[Système] eula.txt généré avec succès (eula=true).")
+                self._notify_log(f"{SYS} {t('sys.eula_created')}")
             except Exception as e:
-                self._notify_log(f"[Erreur] Impossible de créer eula.txt: {e}")
+                self._notify_log(f"{ERR} {t('sys.eula_fail').format(err=e)}")
 
     def start_server(self, memory_mb=1024, aikar_flags=False):
+        SYS  = t("sys.prefix_system")
+        ERR  = t("sys.prefix_error")
         if self.is_running:
-            self._notify_log("[Système] Le serveur est déjà en cours d'exécution.")
+            self._notify_log(f"{SYS} {t('sys.already_running')}")
             return
 
         if not self.is_installed():
-            self._notify_log("[Erreur] server.jar introuvable pour cette version.")
+            self._notify_log(f"{ERR} {t('sys.jar_missing')}")
             return
 
         self.accept_eula()
 
         def _startup_sequence():
+            SYS   = t("sys.prefix_system")
+            ERR   = t("sys.prefix_error")
+            FATAL = t("sys.prefix_fatal")
+
             # 1. Vérifie et installe le JRE si nécessaire
             target_java = self.java_manager.get_required_java_version(self.current_version)
-            
-            self._notify_log(f"[Système] Vérification du runtime Java (Version requise: {target_java})...")
-            
+
+            self._notify_log(f"{SYS} {t('sys.java_checking').format(ver=target_java)}")
+
             # Cette étape bloque (téléchargement). On est déjà dans un sous-thread.
             success = self.java_manager.ensure_java(target_java, on_log_callback=self._notify_log)
             if not success:
-                self._notify_log(f"[Erreur] Impossible d'acquérir Java {target_java}. Abandon du démarrage.")
+                self._notify_log(f"{ERR} {t('sys.java_missing').format(ver=target_java)}")
                 self._notify_status(False)
                 return
-                
+
             java_exe = self.java_manager.get_java_executable(target_java)
             if not java_exe:
-                self._notify_log(f"[Erreur] Exécutable Java {target_java} introuvable après installation.")
+                self._notify_log(f"{ERR} {t('sys.java_exe_missing').format(ver=target_java)}")
                 self._notify_status(False)
                 return
 
@@ -121,8 +130,8 @@ class ServerManager:
                 else:
                     java_args = [f"-Xms{memory_mb}M", f"-Xmx{memory_mb}M"]
 
-                aikar_label = "Activés" if aikar_flags else "Désactivés"
-                self._notify_log(f"[Système] Démarrage avec {memory_mb} Mo RAM | Aikar Flags : {aikar_label}")
+                aikar_label = t("sys.start_info_aikar_on") if aikar_flags else t("sys.start_info_aikar_off")
+                self._notify_log(f"{SYS} {t('sys.start_info').format(ram=memory_mb, aikar=aikar_label)}")
 
                 self.process = subprocess.Popen(
                     [java_exe] + java_args + ["-jar", self.launch_jar, "nogui"],
@@ -135,13 +144,13 @@ class ServerManager:
                     universal_newlines=True
                 )
                 self._notify_status(True)
-                self._notify_log(f"[Système] Démarrage du serveur dans {self.server_dir} avec Java {target_java}...")
+                self._notify_log(f"{SYS} {t('sys.starting_in').format(dir=self.server_dir, ver=target_java)}")
 
                 # Lance la lecture des événements serveurs
                 self._read_logs()
 
             except Exception as e:
-                self._notify_log(f"[Erreur fatale] Impossible de lancer Java: {e}")
+                self._notify_log(f"{FATAL} {t('sys.java_launch_fail').format(err=e)}")
                 self._notify_status(False)
 
         # Lancer toute la séquence (incluant le possible téléchargement) en asynchrone
@@ -198,7 +207,7 @@ class ServerManager:
         self.process.stdout.close()
         self.process.wait()
         self._notify_status(False)
-        self._notify_log("[Système] Le serveur est arrêté.")
+        self._notify_log(f"{t('sys.prefix_system')} {t('sys.server_stopped')}")
         # On vide la liste des joueurs quand le serveur s'éteint
         self.connected_players.clear()
         if self.on_players_update_callback:
@@ -211,15 +220,18 @@ class ServerManager:
                 self.process.stdin.write(command + "\n")
                 self.process.stdin.flush()
             except Exception as e:
-                self._notify_log(f"[Erreur] Échec de l'envoi de la commande: {e}")
+                self._notify_log(
+                    f"{t('sys.prefix_error')} {t('sys.command_fail').format(err=e)}")
         else:
-            self._notify_log("[Système] Serveur éteint, commande ignorée.")
+            self._notify_log(
+                f"{t('sys.prefix_system')} {t('sys.command_ignored')}")
             
     def stop_server(self):
         if self.is_running:
             self.send_command("stop")
         else:
-            self._notify_log("[Système] Le serveur n'est pas en marche.")
+            self._notify_log(
+                f"{t('sys.prefix_system')} {t('sys.server_not_running')}")
 
     def start_scheduler(self, message, interval_minutes):
         """Lance un thread qui envoie périodiquement un message 'say' au serveur."""

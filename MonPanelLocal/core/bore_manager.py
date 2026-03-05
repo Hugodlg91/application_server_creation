@@ -6,6 +6,7 @@ import requests
 import re
 import zipfile
 import tarfile
+from core.i18n import t
 
 class BoreManager:
     """
@@ -26,8 +27,9 @@ class BoreManager:
             if on_progress: on_progress(1.0)
             return True
 
-        if on_log: on_log("[Bore] Vérification de la disponibilité du client (GitHub API)...")
-        
+        BORE = t("sys.prefix_bore")
+        if on_log: on_log(f"{BORE} {t('sys.bore_checking')}")
+
         try:
             os.makedirs(self.runtimes_dir, exist_ok=True)
             response = requests.get("https://api.github.com/repos/ekzhang/bore/releases/latest", timeout=5)
@@ -59,11 +61,11 @@ class BoreManager:
                     break
 
             if not download_url:
-                if on_log: on_log(f"[Bore] Erreur: Aucune version compatible trouvée pour {target_os} {target_arch}.")
+                if on_log: on_log(f"{BORE} {t('sys.bore_no_release').format(os=target_os, arch=target_arch)}")
                 return False
 
             archive_path = os.path.join(self.runtimes_dir, f"bore_temp.{extension}")
-            if on_log: on_log("[Bore] Téléchargement de Bore en cours...")
+            if on_log: on_log(f"{BORE} {t('sys.bore_downloading')}")
 
             with requests.get(download_url, stream=True, timeout=10) as r:
                 r.raise_for_status()
@@ -76,7 +78,7 @@ class BoreManager:
                         if total_size > 0 and on_progress:
                             on_progress(downloaded / total_size)
 
-            if on_log: on_log("[Bore] Extraction des fichiers...")
+            if on_log: on_log(f"{BORE} {t('sys.bore_extracting')}")
             if extension == "zip":
                 with zipfile.ZipFile(archive_path, 'r') as zip_ref:
                     zip_ref.extractall(self.runtimes_dir)
@@ -90,11 +92,11 @@ class BoreManager:
             if "win" not in os_name and os.path.exists(exe_path):
                 os.chmod(exe_path, 0o755)
 
-            if on_log: on_log("[Bore] L'outil de tunnel est installé avec succès.")
+            if on_log: on_log(f"{BORE} {t('sys.bore_installed')}")
             return True
 
         except Exception as e:
-            if on_log: on_log(f"[Bore] Erreur d'installation: {e}")
+            if on_log: on_log(f"{BORE} {t('sys.bore_install_error').format(err=e)}")
             return False
 
     def start(self, port, on_log, on_ip_allocated):
@@ -102,13 +104,15 @@ class BoreManager:
             return
 
         exe_path = self.get_executable_path()
+        BORE = t("sys.prefix_bore")
         if not os.path.exists(exe_path):
-            if on_log: on_log("[Bore] Exécutable introuvable. Veuillez réessayer.")
+            if on_log: on_log(f"{BORE} {t('sys.bore_missing_exe')}")
             return
 
         self.is_running = True
-        
+
         def _run():
+            BORE = t("sys.prefix_bore")
             try:
                 self.process = subprocess.Popen(
                     [exe_path, "local", str(port), "--to", "bore.pub"],
@@ -124,18 +128,18 @@ class BoreManager:
                 for line in iter(self.process.stdout.readline, ''):
                     if line:
                         clean_line = line.strip()
-                        if on_log: on_log(f"[Bore] {clean_line}")
-                        
+                        if on_log: on_log(f"{BORE} {clean_line}")
+
                         match = re.search(r"listening at (bore\.pub:\d+)", clean_line)
                         if match:
                             on_ip_allocated(match.group(1))
 
                 self.process.wait()
             except Exception as e:
-                if on_log: on_log(f"[Bore] Crash processus: {e}")
+                if on_log: on_log(f"{BORE} {t('sys.bore_crash').format(err=e)}")
             finally:
                 self.is_running = False
-                if on_log: on_log("[Bore] Tunnel désactivé.")
+                if on_log: on_log(f"{BORE} {t('sys.bore_disabled')}")
                 on_ip_allocated("")
 
         threading.Thread(target=_run, daemon=True).start()

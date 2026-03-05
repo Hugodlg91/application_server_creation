@@ -4,7 +4,30 @@ Ce document retrace l'historique de développement, les fonctionnalités ajouté
 
 ---
 
-## Version 9.0 - Internationalisation FR/EN + Sélecteur de langue + Renommage EasyHost MC (Actuelle)
+## Version 9.2 - Traduction des logs système / core (Actuelle)
+**Date :** 05 Mars 2026
+
+### Système
+- **`core/i18n.py`** : Ajout du bloc `sys.*` (~60 clés) dans les dicts FR et EN — préfixes de log, messages de `server_manager`, `bore_manager`, `java_manager`, `downloader`.
+- **`core/server_manager.py`** : `from core.i18n import t` + remplacement de tous les `[Système]`, `[Erreur]`, `[Erreur fatale]` par `t("sys.prefix_*")` + `t("sys.*")`. Variables locales `SYS / ERR / FATAL` en début de méthode. `aikar_label` via `t("sys.start_info_aikar_on/off")`.
+- **`core/bore_manager.py`** : `from core.i18n import t` + `BORE = t("sys.prefix_bore")` dans chaque méthode. Tous les `[Bore] ...` remplacés.
+- **`core/java_manager.py`** : `from core.i18n import t` + `JAVA = t("sys.prefix_java")`. Tous les `[Java] ...` remplacés.
+- **`core/downloader.py`** : `from core.i18n import t` + variables `DL / ERR / FAB` dans `_download_task`. Tous les `[Téléchargement]`, `[Erreur]`, `[Fabric]` remplacés.
+- **`ui/tab_console.py`** (`append_log`) : Détection de couleur des logs rendue dynamique — `SYS_PREFIXES` et `ERR_PREFIXES` calculés via `t()` à chaque appel. Fonctionne correctement en FR et en EN.
+
+---
+
+## Version 9.1 - Corrections i18n résiduelles
+**Date :** 05 Mars 2026
+
+### Corrections
+- **`ui/header_bar.py`** (`update_status`) : "joueur{s}" hardcodé → `t("header.player")` / `t("header.players")`. Clés ajoutées dans `core/i18n.py` (FR : "joueur"/"joueurs", EN : "player"/"players").
+- **`ui/tab_console.py`** (`set_bore_state`) : Emoji 🌐 supprimé — bouton affiche désormais `t("console.public")` comme à l'init (cohérence v8.4).
+- **`ui/tab_settings.py`** + **`core/i18n.py`** : Valeurs RAM unifiées "512 MB"…"8192 MB" (standard international). Label FR `settings.ram` mis à jour de "(Mo)" à "(MB)".
+
+---
+
+## Version 9.0 - Internationalisation FR/EN + Sélecteur de langue + Renommage EasyHost MC
 **Date :** 05 Mars 2026
 
 ### Système i18n

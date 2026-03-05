@@ -125,9 +125,9 @@ class HeaderBar(ctk.CTkFrame):
     def update_status(self, is_running, player_count=0):
         if is_running:
             self.pill_status.configure(fg_color=GREEN_TINT)
-            s = "s" if player_count > 1 else ""
+            player_word = t("header.players") if player_count != 1 else t("header.player")
             self.lbl_status.configure(
-                text=f"● {t('header.online')} · {player_count} joueur{s}", text_color=GREEN)
+                text=f"● {t('header.online')} · {player_count} {player_word}", text_color=GREEN)
         else:
             self.pill_status.configure(fg_color=MUTED)
             self.lbl_status.configure(

@@ -56,7 +56,7 @@ class TabSettings(ctk.CTkFrame):
 
         # Pré-remplissage config perf
         perf = self.on_load_perf_callback()
-        self.option_ram.set(f"{perf['ram_mb']} Mo")
+        self.option_ram.set(f"{perf['ram_mb']} MB")
         if perf["aikar_flags"]:
             self.switch_aikar.select()
         else:
@@ -165,7 +165,7 @@ class TabSettings(ctk.CTkFrame):
                      ).grid(row=1, column=0, padx=14, pady=5, sticky="w")
         self.option_ram = ctk.CTkOptionMenu(
             self.frm_perf,
-            values=["512 Mo", "1024 Mo", "2048 Mo", "4096 Mo", "6144 Mo", "8192 Mo"],
+            values=["512 MB", "1024 MB", "2048 MB", "4096 MB", "6144 MB", "8192 MB"],
             fg_color=BG, button_color=ACCENT,
             button_hover_color=ACCENT2, text_color=TEXT,
             dropdown_fg_color=SURFACE, dropdown_text_color=TEXT,

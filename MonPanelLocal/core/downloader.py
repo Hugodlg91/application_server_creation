@@ -2,6 +2,7 @@ import os
 import subprocess
 import requests
 import threading
+from core.i18n import t
 
 class Downloader:
     """
@@ -74,19 +75,23 @@ class Downloader:
                             _progress(progress_start + ratio * (progress_end - progress_start))
 
         def _download_task():
+            DL  = t("sys.prefix_download")
+            ERR = t("sys.prefix_error")
+            FAB = t("sys.prefix_fabric")
+
             server_dir = os.path.join(self.base_dir, f"minecraft_server_{server_type}_{version}")
             os.makedirs(server_dir, exist_ok=True)
 
             try:
                 # ── PaperMC ──────────────────────────────────────────────────
                 if server_type == "PaperMC":
-                    _log(f"[Téléchargement] Recherche de la dernière build PaperMC {version}...")
+                    _log(f"{DL} {t('sys.dl_paper_searching').format(ver=version)}")
 
                     resp = requests.get(f"{self.paper_api}/versions/{version}", timeout=5)
                     resp.raise_for_status()
                     builds = resp.json().get("builds", [])
                     if not builds:
-                        _log(f"[Téléchargement] Aucune build trouvée pour {version}.")
+                        _log(f"{DL} {t('sys.dl_paper_no_build').format(ver=version)}")
                         _finish(False)
                         return
 
@@ -97,20 +102,20 @@ class Downloader:
                     resp2.raise_for_status()
                     jar_name = resp2.json().get("downloads", {}).get("application", {}).get("name")
                     if not jar_name:
-                        _log("[Téléchargement] Erreur : nom du .jar introuvable.")
+                        _log(f"{DL} {t('sys.dl_paper_jar_missing')}")
                         _finish(False)
                         return
 
-                    _log(f"[Téléchargement] Téléchargement PaperMC {version} (build {latest_build})...")
+                    _log(f"{DL} {t('sys.dl_paper_start').format(ver=version, build=latest_build)}")
                     url = f"{self.paper_api}/versions/{version}/builds/{latest_build}/downloads/{jar_name}"
                     _stream_download(url, os.path.join(server_dir, "server.jar"))
-                    _log(f"[Téléchargement] Succès → minecraft_server_PaperMC_{version}/server.jar")
+                    _log(f"{DL} {t('sys.dl_paper_done').format(ver=version)}")
                     _progress(1.0)
                     _finish(True)
 
                 # ── Vanilla ──────────────────────────────────────────────────
                 elif server_type == "Vanilla":
-                    _log(f"[Téléchargement] Récupération du manifest Vanilla...")
+                    _log(f"{DL} {t('sys.dl_vanilla_fetching')}")
                     resp = requests.get(
                         "https://launchermeta.mojang.com/mc/game/version_manifest.json", timeout=5
                     )
@@ -118,7 +123,7 @@ class Downloader:
                     entries = resp.json().get("versions", [])
                     entry = next((e for e in entries if e["id"] == version), None)
                     if not entry:
-                        _log(f"[Téléchargement] Version Vanilla {version} introuvable dans le manifest.")
+                        _log(f"{DL} {t('sys.dl_vanilla_not_found').format(ver=version)}")
                         _finish(False)
                         return
 
@@ -126,19 +131,19 @@ class Downloader:
                     resp2.raise_for_status()
                     server_url = resp2.json().get("downloads", {}).get("server", {}).get("url")
                     if not server_url:
-                        _log(f"[Téléchargement] Pas de serveur disponible pour Vanilla {version}.")
+                        _log(f"{DL} {t('sys.dl_vanilla_no_server').format(ver=version)}")
                         _finish(False)
                         return
 
-                    _log(f"[Téléchargement] Téléchargement Vanilla {version}...")
+                    _log(f"{DL} {t('sys.dl_vanilla_start').format(ver=version)}")
                     _stream_download(server_url, os.path.join(server_dir, "server.jar"))
-                    _log(f"[Téléchargement] Succès → minecraft_server_Vanilla_{version}/server.jar")
+                    _log(f"{DL} {t('sys.dl_vanilla_done').format(ver=version)}")
                     _progress(1.0)
                     _finish(True)
 
                 # ── Fabric ───────────────────────────────────────────────────
                 elif server_type == "Fabric":
-                    _log(f"[Fabric] Récupération des métadonnées...")
+                    _log(f"{FAB} {t('sys.dl_fabric_fetching')}")
 
                     # Installateur : prendre le premier (plus récent)
                     resp = requests.get(
@@ -155,21 +160,21 @@ class Downloader:
                     resp2.raise_for_status()
                     loader_version = resp2.json()[0]["loader"]["version"]
 
-                    _log(f"[Fabric] Loader {loader_version} sélectionné.")
+                    _log(f"{FAB} {t('sys.dl_fabric_loader').format(ver=loader_version)}")
 
                     # Télécharger fabric-installer.jar (0% → 50%)
                     installer_path = os.path.join(server_dir, "fabric-installer.jar")
-                    _log(f"[Fabric] Téléchargement de l'installateur...")
+                    _log(f"{FAB} {t('sys.dl_fabric_installer')}")
                     _stream_download(installer_url, installer_path, 0.0, 0.5)
 
                     # Vérifier Java
                     if not java_exe_path or not os.path.exists(java_exe_path):
-                        _log("[Erreur] Java introuvable pour lancer l'installateur Fabric.")
+                        _log(f"{ERR} {t('sys.dl_java_missing')}")
                         _finish(False)
                         return
 
                     # Lancer l'installation via Java
-                    _log("[Fabric] Lancement de l'installateur...")
+                    _log(f"{FAB} {t('sys.dl_fabric_launching')}")
                     result = subprocess.run(
                         [java_exe_path, "-jar", "fabric-installer.jar",
                          "server",
@@ -183,7 +188,7 @@ class Downloader:
                     )
 
                     if result.returncode != 0:
-                        _log(f"[Erreur] Installateur Fabric a échoué :\n{result.stderr}")
+                        _log(f"{ERR} {t('sys.dl_fabric_fail').format(err=result.stderr)}")
                         _finish(False)
                         return
 
@@ -195,11 +200,11 @@ class Downloader:
                     except Exception:
                         pass
 
-                    _log("[Fabric] Installation terminée.")
+                    _log(f"{FAB} {t('sys.dl_fabric_done')}")
                     _finish(True)
 
             except Exception as e:
-                _log(f"[Téléchargement] Erreur : {e}")
+                _log(f"{DL} {t('sys.dl_error').format(err=e)}")
                 _finish(False)
 
         threading.Thread(target=_download_task, daemon=True).start()

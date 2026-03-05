@@ -72,7 +72,7 @@ FR: dict[str, str] = {
     "settings.save":                   "Enregistrer",
     "settings.saved_ok":               "Paramètres enregistrés avec succès.",
     "settings.save_error":             "Erreur lors de l'enregistrement des paramètres.",
-    "settings.ram":                    "RAM allouée (Mo)",
+    "settings.ram":                    "RAM allouée (MB)",
     "settings.aikar":                  "Flags Aikar",
     "settings.aikar_desc":             "Active les flags JVM recommandés pour les serveurs Minecraft.",
     "settings.save_perf":              "Enregistrer les performances",
@@ -95,6 +95,8 @@ FR: dict[str, str] = {
     "header.subtitle":                 "Panneau de gestion de serveur Minecraft",
     "header.offline":                  "Hors ligne",
     "header.online":                   "En ligne",
+    "header.player":                   "joueur",
+    "header.players":                  "joueurs",
 
     # ── main_window.py / main.py ─────────────────────────────────────────────
     "app.title":                       "EasyHost MC",
@@ -106,6 +108,70 @@ FR: dict[str, str] = {
     "app.search_error":                "Erreur lors de la recherche de plugins.",
     "app.bore_error":                  "Impossible de démarrer le tunnel Bore.",
     "app.no_version_selected":         "Veuillez sélectionner une version avant de continuer.",
+
+    # ── Logs système (core/) ─────────────────────────────────────────────────
+    "sys.prefix_system":               "[Système]",
+    "sys.prefix_error":                "[Erreur]",
+    "sys.prefix_fatal":                "[Erreur fatale]",
+    "sys.prefix_bore":                 "[Bore]",
+    "sys.prefix_java":                 "[Java]",
+    "sys.prefix_download":             "[Téléchargement]",
+    "sys.prefix_fabric":               "[Fabric]",
+
+    # server_manager.py
+    "sys.already_running":             "Le serveur est déjà en cours d'exécution.",
+    "sys.jar_missing":                 "server.jar introuvable pour cette version.",
+    "sys.eula_created":                "eula.txt généré avec succès (eula=true).",
+    "sys.eula_fail":                   "Impossible de créer eula.txt : {err}",
+    "sys.java_checking":               "Vérification du runtime Java (Version requise : {ver})…",
+    "sys.java_missing":                "Impossible d'acquérir Java {ver}. Abandon du démarrage.",
+    "sys.java_exe_missing":            "Exécutable Java {ver} introuvable après installation.",
+    "sys.start_info_aikar_on":         "Activés",
+    "sys.start_info_aikar_off":        "Désactivés",
+    "sys.start_info":                  "Démarrage avec {ram} Mo RAM | Aikar Flags : {aikar}",
+    "sys.starting_in":                 "Démarrage du serveur dans {dir} avec Java {ver}…",
+    "sys.java_launch_fail":            "Impossible de lancer Java : {err}",
+    "sys.server_stopped":              "Le serveur est arrêté.",
+    "sys.server_not_running":          "Le serveur n'est pas en marche.",
+    "sys.command_fail":                "Échec de l'envoi de la commande : {err}",
+    "sys.command_ignored":             "Serveur éteint, commande ignorée.",
+
+    # bore_manager.py
+    "sys.bore_checking":               "Vérification de la disponibilité du client (GitHub API)…",
+    "sys.bore_no_release":             "Erreur : Aucune version compatible trouvée pour {os} {arch}.",
+    "sys.bore_downloading":            "Téléchargement de Bore en cours…",
+    "sys.bore_extracting":             "Extraction des fichiers…",
+    "sys.bore_installed":              "L'outil de tunnel est installé avec succès.",
+    "sys.bore_install_error":          "Erreur d'installation : {err}",
+    "sys.bore_missing_exe":            "Exécutable introuvable. Veuillez réessayer.",
+    "sys.bore_crash":                  "Crash processus : {err}",
+    "sys.bore_disabled":               "Tunnel désactivé.",
+
+    # java_manager.py
+    "sys.java_dl_required":            "Téléchargement du JRE (Java {ver}) requis…",
+    "sys.java_extracting":             "Extraction du JRE en cours…",
+    "sys.java_runtime_ok":             "Runtime installé avec succès ! ({dir})",
+    "sys.java_dl_error":               "Erreur lors de l'acquisition du JRE {ver} : {err}",
+
+    # downloader.py
+    "sys.dl_paper_searching":          "Recherche de la dernière build PaperMC {ver}…",
+    "sys.dl_paper_no_build":           "Aucune build trouvée pour {ver}.",
+    "sys.dl_paper_jar_missing":        "Erreur : nom du .jar introuvable.",
+    "sys.dl_paper_start":              "Téléchargement PaperMC {ver} (build {build})…",
+    "sys.dl_paper_done":               "Succès → minecraft_server_PaperMC_{ver}/server.jar",
+    "sys.dl_vanilla_fetching":         "Récupération du manifest Vanilla…",
+    "sys.dl_vanilla_not_found":        "Version Vanilla {ver} introuvable dans le manifest.",
+    "sys.dl_vanilla_no_server":        "Pas de serveur disponible pour Vanilla {ver}.",
+    "sys.dl_vanilla_start":            "Téléchargement Vanilla {ver}…",
+    "sys.dl_vanilla_done":             "Succès → minecraft_server_Vanilla_{ver}/server.jar",
+    "sys.dl_fabric_fetching":          "Récupération des métadonnées…",
+    "sys.dl_fabric_loader":            "Loader {ver} sélectionné.",
+    "sys.dl_fabric_installer":         "Téléchargement de l'installateur…",
+    "sys.dl_java_missing":             "Java introuvable pour lancer l'installateur Fabric.",
+    "sys.dl_fabric_launching":         "Lancement de l'installateur…",
+    "sys.dl_fabric_fail":              "Installateur Fabric a échoué : {err}",
+    "sys.dl_fabric_done":              "Installation terminée.",
+    "sys.dl_error":                    "Erreur : {err}",
 }
 
 # ---------------------------------------------------------------------------
@@ -199,6 +265,8 @@ EN: dict[str, str] = {
     "header.subtitle":                 "Minecraft server management panel",
     "header.offline":                  "Offline",
     "header.online":                   "Online",
+    "header.player":                   "player",
+    "header.players":                  "players",
 
     # ── main_window.py / main.py ─────────────────────────────────────────────
     "app.title":                       "EasyHost MC",
@@ -210,6 +278,70 @@ EN: dict[str, str] = {
     "app.search_error":                "Error searching for plugins.",
     "app.bore_error":                  "Unable to start Bore tunnel.",
     "app.no_version_selected":         "Please select a version before continuing.",
+
+    # ── Logs système (core/) ─────────────────────────────────────────────────
+    "sys.prefix_system":               "[System]",
+    "sys.prefix_error":                "[Error]",
+    "sys.prefix_fatal":                "[Fatal error]",
+    "sys.prefix_bore":                 "[Bore]",
+    "sys.prefix_java":                 "[Java]",
+    "sys.prefix_download":             "[Download]",
+    "sys.prefix_fabric":               "[Fabric]",
+
+    # server_manager.py
+    "sys.already_running":             "The server is already running.",
+    "sys.jar_missing":                 "server.jar not found for this version.",
+    "sys.eula_created":                "eula.txt generated successfully (eula=true).",
+    "sys.eula_fail":                   "Unable to create eula.txt: {err}",
+    "sys.java_checking":               "Checking Java runtime (required version: {ver})…",
+    "sys.java_missing":                "Unable to acquire Java {ver}. Aborting startup.",
+    "sys.java_exe_missing":            "Java {ver} executable not found after installation.",
+    "sys.start_info_aikar_on":         "Enabled",
+    "sys.start_info_aikar_off":        "Disabled",
+    "sys.start_info":                  "Starting with {ram} MB RAM | Aikar Flags: {aikar}",
+    "sys.starting_in":                 "Starting server in {dir} with Java {ver}…",
+    "sys.java_launch_fail":            "Unable to launch Java: {err}",
+    "sys.server_stopped":              "Server stopped.",
+    "sys.server_not_running":          "The server is not running.",
+    "sys.command_fail":                "Failed to send command: {err}",
+    "sys.command_ignored":             "Server is off, command ignored.",
+
+    # bore_manager.py
+    "sys.bore_checking":               "Checking client availability (GitHub API)…",
+    "sys.bore_no_release":             "Error: No compatible release found for {os} {arch}.",
+    "sys.bore_downloading":            "Downloading Bore…",
+    "sys.bore_extracting":             "Extracting files…",
+    "sys.bore_installed":              "Tunnel tool installed successfully.",
+    "sys.bore_install_error":          "Installation error: {err}",
+    "sys.bore_missing_exe":            "Executable not found. Please try again.",
+    "sys.bore_crash":                  "Process crash: {err}",
+    "sys.bore_disabled":               "Tunnel disabled.",
+
+    # java_manager.py
+    "sys.java_dl_required":            "Downloading JRE (Java {ver})…",
+    "sys.java_extracting":             "Extracting JRE…",
+    "sys.java_runtime_ok":             "Runtime installed successfully! ({dir})",
+    "sys.java_dl_error":               "Error acquiring JRE {ver}: {err}",
+
+    # downloader.py
+    "sys.dl_paper_searching":          "Looking for latest PaperMC {ver} build…",
+    "sys.dl_paper_no_build":           "No build found for {ver}.",
+    "sys.dl_paper_jar_missing":        "Error: .jar filename not found.",
+    "sys.dl_paper_start":              "Downloading PaperMC {ver} (build {build})…",
+    "sys.dl_paper_done":               "Done → minecraft_server_PaperMC_{ver}/server.jar",
+    "sys.dl_vanilla_fetching":         "Fetching Vanilla manifest…",
+    "sys.dl_vanilla_not_found":        "Vanilla {ver} not found in manifest.",
+    "sys.dl_vanilla_no_server":        "No server available for Vanilla {ver}.",
+    "sys.dl_vanilla_start":            "Downloading Vanilla {ver}…",
+    "sys.dl_vanilla_done":             "Done → minecraft_server_Vanilla_{ver}/server.jar",
+    "sys.dl_fabric_fetching":          "Fetching metadata…",
+    "sys.dl_fabric_loader":            "Loader {ver} selected.",
+    "sys.dl_fabric_installer":         "Downloading installer…",
+    "sys.dl_java_missing":             "Java not found to run the Fabric installer.",
+    "sys.dl_fabric_launching":         "Launching installer…",
+    "sys.dl_fabric_fail":              "Fabric installer failed: {err}",
+    "sys.dl_fabric_done":              "Installation complete.",
+    "sys.dl_error":                    "Error: {err}",
 }
 
 # ---------------------------------------------------------------------------

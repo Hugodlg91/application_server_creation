@@ -243,11 +243,17 @@ class TabConsole(ctk.CTkFrame):
     def append_log(self, text):
         self.console_box.configure(state="normal")
         if self._tags_ready:
-            if "ERROR" in text or "[Erreur]" in text:
+            SYS_PREFIXES = (
+                t("sys.prefix_system"), t("sys.prefix_java"),
+                t("sys.prefix_bore"),   t("sys.prefix_download"),
+                t("sys.prefix_fabric"),
+            )
+            ERR_PREFIXES = (t("sys.prefix_error"), t("sys.prefix_fatal"))
+            if any(p in text for p in ERR_PREFIXES) or "ERROR" in text:
                 tag = "error"
             elif "WARN" in text or "WARNING" in text:
                 tag = "warn"
-            elif "[Système]" in text or "[Bore]" in text or "[Java]" in text:
+            elif any(p in text for p in SYS_PREFIXES):
                 tag = "system"
             else:
                 tag = "default"
@@ -287,7 +293,7 @@ class TabConsole(ctk.CTkFrame):
                 self.entry_bore_ip.grid(row=0, column=9, padx=4, pady=8)
         else:
             self.btn_bore.configure(
-                text=f"🌐  {t('console.public')}", fg_color=BLUE_TINT,
+                text=t("console.public"), fg_color=BLUE_TINT,
                 hover_color=SURFACE, text_color=BLUE,
                 border_color=BLUE_BORDER)
             self.entry_bore_ip.grid_remove()
