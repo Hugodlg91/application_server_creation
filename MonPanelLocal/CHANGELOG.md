@@ -1,4 +1,4 @@
-# EasyHost MC - Changelog
+# EasyHost - Changelog
 
 Ce document retrace l'historique de développement, les fonctionnalités ajoutées et l'architecture du projet.
 

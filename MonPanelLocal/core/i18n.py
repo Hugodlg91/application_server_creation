@@ -1,4 +1,4 @@
-# EasyHost MC — core/i18n.py
+# EasyHost — core/i18n.py
 # Système de traduction FR / EN
 # Usage : from core.i18n import t, set_lang, get_lang
 
@@ -91,7 +91,7 @@ FR: dict[str, str] = {
     "tabs.settings":                   "Paramètres",
 
     # ── header_bar.py ────────────────────────────────────────────────────────
-    "header.title":                    "EasyHost MC",
+    "header.title":                    "EasyHost",
     "header.subtitle":                 "Panneau de gestion de serveur Minecraft",
     "header.offline":                  "Hors ligne",
     "header.online":                   "En ligne",
@@ -99,7 +99,7 @@ FR: dict[str, str] = {
     "header.players":                  "joueurs",
 
     # ── main_window.py / main.py ─────────────────────────────────────────────
-    "app.title":                       "EasyHost MC",
+    "app.title":                       "EasyHost",
     "app.closing_title":               "Fermeture",
     "app.closing_log":                 "Fermeture de l'application…",
     "app.install_done":                "Installation terminée avec succès.",
@@ -261,7 +261,7 @@ EN: dict[str, str] = {
     "tabs.settings":                   "Settings",
 
     # ── header_bar.py ────────────────────────────────────────────────────────
-    "header.title":                    "EasyHost MC",
+    "header.title":                    "EasyHost",
     "header.subtitle":                 "Minecraft server management panel",
     "header.offline":                  "Offline",
     "header.online":                   "Online",
@@ -269,7 +269,7 @@ EN: dict[str, str] = {
     "header.players":                  "players",
 
     # ── main_window.py / main.py ─────────────────────────────────────────────
-    "app.title":                       "EasyHost MC",
+    "app.title":                       "EasyHost",
     "app.closing_title":               "Closing",
     "app.closing_log":                 "Closing application…",
     "app.install_done":                "Installation completed successfully.",
