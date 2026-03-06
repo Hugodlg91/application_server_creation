@@ -1,4 +1,5 @@
 import os
+import sys
 import requests
 import tarfile
 import zipfile
@@ -6,13 +7,19 @@ import platform
 import shutil
 from core.i18n import t
 
+
+def _get_base_dir() -> str:
+    if getattr(sys, "frozen", False):
+        return os.path.dirname(sys.executable)
+    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 class JavaManager:
     """
     Gère le téléchargement, l'extraction et l'utilisation de runtimes Java portables
     via l'API Adoptium v3 (Temurin).
     """
     def __init__(self):
-        self.base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        self.base_dir = _get_base_dir()
         self.runtimes_dir = os.path.join(self.base_dir, "runtimes")
         os.makedirs(self.runtimes_dir, exist_ok=True)
 

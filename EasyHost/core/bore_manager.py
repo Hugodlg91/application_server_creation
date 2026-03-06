@@ -1,4 +1,5 @@
 import os
+import sys
 import subprocess
 import threading
 import platform
@@ -8,12 +9,18 @@ import zipfile
 import tarfile
 from core.i18n import t
 
+
+def _get_base_dir() -> str:
+    if getattr(sys, "frozen", False):
+        return os.path.dirname(sys.executable)
+    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 class BoreManager:
     """
     Gère le tunneling avec l'outil léger Bore (en Rust).
     """
     def __init__(self):
-        self.base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        self.base_dir = _get_base_dir()
         self.runtimes_dir = os.path.join(self.base_dir, "runtimes", "bore")
         self.process = None
         self.is_running = False

@@ -1,12 +1,20 @@
 import os
+import sys
 import json
+
+
+def _get_base_dir() -> str:
+    if getattr(sys, "frozen", False):
+        return os.path.dirname(sys.executable)
+    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 
 class ConfigManager:
     """
     Gère la lecture et modification propre du fichier server.properties.
     """
     def __init__(self):
-        self.base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        self.base_dir = _get_base_dir()
         self.properties_path = None
         
     def set_version(self, server_type, version):

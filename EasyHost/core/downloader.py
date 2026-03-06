@@ -1,8 +1,15 @@
 import os
+import sys
 import subprocess
 import requests
 import threading
 from core.i18n import t
+
+
+def _get_base_dir() -> str:
+    if getattr(sys, "frozen", False):
+        return os.path.dirname(sys.executable)
+    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 class Downloader:
     """
@@ -10,7 +17,7 @@ class Downloader:
     pour PaperMC, Vanilla et Fabric.
     """
     def __init__(self):
-        self.base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        self.base_dir = _get_base_dir()
         self.paper_api = "https://api.papermc.io/v2/projects/paper"
 
     def get_versions(self, server_type: str) -> list:

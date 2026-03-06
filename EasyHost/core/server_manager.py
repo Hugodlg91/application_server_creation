@@ -1,10 +1,17 @@
 import os
+import sys
 import subprocess
 import threading
 import re
 import time
 from .java_manager import JavaManager
 from core.i18n import t
+
+
+def _get_base_dir() -> str:
+    if getattr(sys, "frozen", False):
+        return os.path.dirname(sys.executable)
+    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 class ServerManager:
     """
@@ -14,7 +21,7 @@ class ServerManager:
     def __init__(self, on_log_received=None, on_status_changed=None):
         self.java_manager = JavaManager()
         self.process = None
-        self.base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        self.base_dir = _get_base_dir()
         self.server_dir = self.base_dir
         self.current_version = None
         self.jar_path = ""
