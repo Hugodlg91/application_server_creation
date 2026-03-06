@@ -1,0 +1,118 @@
+name: Build EasyHost MC
+
+on:
+  push:
+    tags:
+      - "v*"          # Se déclenche sur git tag v1.0, v1.2, etc.
+  workflow_dispatch:  # Permet de lancer manuellement depuis GitHub
+
+jobs:
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install pyinstaller
+          pip install customtkinter pillow psutil requests
+
+      - name: Build
+        run: python Build/build.py
+
+      - name: Zip artifact
+        run: Compress-Archive -Path dist\EasyHost\* -DestinationPath EasyHost-Windows.zip
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: EasyHost-Windows
+          path: EasyHost-Windows.zip
+
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install pyinstaller
+          pip install customtkinter pillow psutil requests
+
+      - name: Build
+        run: python Build/build.py
+
+      - name: Zip artifact
+        run: zip -r EasyHost-macOS.zip dist/EasyHost/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: EasyHost-macOS
+          path: EasyHost-macOS.zip
+
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install system dependencies
+        run: sudo apt-get install -y python3-tk
+
+      - name: Install dependencies
+        run: |
+          pip install pyinstaller
+          pip install customtkinter pillow psutil requests
+
+      - name: Build
+        run: python Build/build.py
+
+      - name: Zip artifact
+        run: zip -r EasyHost-Linux.zip dist/EasyHost/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: EasyHost-Linux
+          path: EasyHost-Linux.zip
+
+
+  release:
+    needs: [build-windows, build-macos, build-linux]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')  # Seulement sur un tag
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            EasyHost-Windows/EasyHost-Windows.zip
+            EasyHost-macOS/EasyHost-macOS.zip
+            EasyHost-Linux/EasyHost-Linux.zip
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
