@@ -45,3 +45,7 @@ env/
 # OS générés
 .DS_Store
 Thumbs.db
+
+# Build
+Build/dist/
+Build/build/
