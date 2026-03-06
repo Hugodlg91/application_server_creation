@@ -40,8 +40,6 @@ EasyHost is a desktop application that lets you launch and manage a Minecraft se
 
 ## Download
 
-Head to the [Releases](../../releases) page and download the zip for your platform:
-
 | Platform | File |
 |----------|------|
 | Windows  | `EasyHost-Windows.zip` |
@@ -55,20 +53,20 @@ Head to the [Releases](../../releases) page and download the zip for your platfo
 ## Getting Started
 
 ### Windows
-1. Download and unzip `EasyHost-Windows.zip`
+1. Unzip `EasyHost-Windows.zip`
 2. Run `EasyHost.exe`
 3. Select a server type (PaperMC recommended) and a Minecraft version
 4. Click **Install** — EasyHost handles the rest
 5. Click **Start** once the installation is complete
 
 ### macOS
-1. Download and unzip `EasyHost-macOS.zip`
+1. Unzip `EasyHost-macOS.zip`
 2. Double-click `EasyHost.app`
 3. If macOS blocks the app: right-click → Open → Open anyway
 4. Follow the same steps as Windows
 
 ### Linux
-1. Download and unzip `EasyHost-Linux.tar.gz`
+1. Unzip `EasyHost-Linux.zip`
 2. Make the binary executable: `chmod +x EasyHost/EasyHost`
 3. Run: `./EasyHost/EasyHost`
 4. If tkinter is missing: `sudo apt install python3-tk`
@@ -106,27 +104,6 @@ Java is downloaded and managed automatically — you don't need to install it ma
 | **PaperMC** | Recommended — best performance, plugin support, all versions |
 | **Vanilla** | Official Mojang server — no plugins |
 | **Fabric** | Mod support via Fabric loader |
-
----
-
-## Building from Source
-
-If you want to run EasyHost from source:
-
-```bash
-git clone https://github.com/yourname/easyhost
-cd easyhost/MonPanelLocal
-pip install -r requirements.txt
-python main.py
-```
-
-To create a distributable build:
-
-```bash
-python build.py
-```
-
-See `BUILD.md` for full build instructions and platform-specific notes.
 
 ---
 
