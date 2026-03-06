@@ -78,7 +78,7 @@ def main():
     elif platform == "darwin" and os.path.exists(icon_mac):
         cmd += ["--icon", icon_mac]
 
-    cmd.append(os.path.join(BASE_DIR, "main.py"))
+    cmd.append(os.path.join(BASE_DIR, "../EasyHost/main.py"))
 
     # ── Build ────────────────────────────────────────────────────────────────
     print("\n[build] Lancement du build…")
