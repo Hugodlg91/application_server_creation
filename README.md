@@ -9,9 +9,9 @@
 
 ---
 
-## What is EasyHost MC?
+## What is EasyHost?
 
-EasyHost MC is a desktop application that lets you launch and manage a Minecraft server without ever opening a terminal. It handles everything automatically — downloading the right Java version, installing the server, and even making it publicly accessible without touching your router.
+EasyHost is a desktop application that lets you launch and manage a Minecraft server without ever opening a terminal. It handles everything automatically — downloading the right Java version, installing the server, and even making it publicly accessible without touching your router.
 
 **Built for people who just want to play with friends, not deal with infrastructure.**
 
@@ -132,13 +132,11 @@ See `BUILD.md` for full build instructions and platform-specific notes.
 
 ## Roadmap
 
-- [ ] Forge & NeoForge support
-- [ ] Spigot support
 - [ ] Automatic server backups
 - [ ] Multi-instance management (run several servers at once)
 - [ ] Other games (Valheim, Terraria, Palworld...)
 
-Support development on [Ko-fi](https://ko-fi.com) or [Patreon](https://patreon.com) to help prioritize these features.
+Support development on [Ko-fi](https://ko-fi.com/vladimirwrld) or [Patreon](https://www.patreon.com/cw/VladimirWRLD) to help prioritize these features.
 
 ---
 
