@@ -145,4 +145,6 @@ Support development on [Ko-fi](https://ko-fi.com/vladimirwrld) or [Patreon](http
 EasyHost MC is proprietary software. You may use it for personal use.
 Redistribution, modification or resale is not permitted without explicit written permission.
 
+See [LICENSE.txt](LICENSE.txt) for full terms.
+
 © 2026 EasyHost — All rights reserved.
